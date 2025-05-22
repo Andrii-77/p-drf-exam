@@ -1,8 +1,26 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.request import Request
 
-from apps.car.models import CarPosterModel
-from apps.car.serializers import CarPosterSerializer
+from apps.car.models import CarBrandModel, CarModelModel, CarPosterModel
+from apps.car.serializers import CarBrandSerializer, CarModelSerializer, CarPosterSerializer
+
+
+class CarBrandListCreateView(ListCreateAPIView):
+    serializer_class = CarBrandSerializer
+    queryset = CarBrandModel.objects.all()
+
+class CarBrandRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
+    serializer_class = CarBrandSerializer
+    queryset = CarBrandModel.objects.all()
+
+
+class CarModelListCreateView(ListCreateAPIView):
+    serializer_class = CarModelSerializer
+    queryset = CarModelModel.objects.all()
+
+class CarModelRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
+    serializer_class = CarModelSerializer
+    queryset = CarModelModel.objects.all()
 
 
 class CarListCreateView(ListCreateAPIView):
