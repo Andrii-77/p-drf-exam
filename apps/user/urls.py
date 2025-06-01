@@ -1,6 +1,13 @@
 from django.urls import path
 
-from .views import BlockUserView, UnBlockUserView, UserBlockAdminView, UserListCreateView, UserToAdminView
+from .views import (
+    BlockUserView,
+    UnBlockUserView,
+    UserAddCarPosterView,
+    UserBlockAdminView,
+    UserListCreateView,
+    UserToAdminView,
+)
 
 urlpatterns = [
     path('', UserListCreateView.as_view(), name='user_list_create'),
@@ -8,4 +15,5 @@ urlpatterns = [
     path('/<int:pk>/unblock', UnBlockUserView.as_view(), name='user_unblock'),
     path('/<int:pk>/to_admin', UserToAdminView.as_view(), name='user_to_admin'),
     path('/<int:pk>/block_admin', UserBlockAdminView.as_view(), name='block_admin'),
+    path('/<int:pk>/cars', UserAddCarPosterView.as_view(), name='user_add_car_poster'),
 ]

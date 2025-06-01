@@ -4,6 +4,8 @@ from django.db import models
 from core.enums.regex_enum import RegexEnum
 from core.models import BaseModel
 
+from apps.user.models import UserModel
+
 
 class CarBrandModel(BaseModel):
     class Meta:
@@ -35,6 +37,7 @@ class CarPosterModel(BaseModel):
         db_table = 'cars'
         ordering = ('-id',)
 
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='cars')
     brand = models.ForeignKey(CarBrandModel, on_delete=models.PROTECT)
     model = models.ForeignKey(CarModelModel, on_delete=models.PROTECT)
     # brand = models.CharField(max_length=50)

@@ -1,4 +1,4 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
 
@@ -27,7 +27,8 @@ class CarModelRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = CarModelModel.objects.all()
 
 
-class CarListCreateView(ListCreateAPIView):
+class CarListCreateView(ListAPIView):
+    #тепер тут створювати cars ми не можемо
     serializer_class = CarPosterSerializer
     queryset = CarPosterModel.objects.all()
     filterset_class = CarFilter

@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView, ListCreateAPIView
 from rest_framework.response import Response
 
+from apps.car.serializers import CarPosterSerializer
 from apps.user.serializers import UserSerializer
 
 UserModel = get_user_model()
@@ -59,6 +60,7 @@ class UserToAdminView(GenericAPIView):
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
 
+
 class UserBlockAdminView(GenericAPIView):
     def get_queryset(self):
         return UserModel.objects.exclude(id=self.request.user.id)
@@ -73,3 +75,16 @@ class UserBlockAdminView(GenericAPIView):
 
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
+
+
+class UserAddCarPosterView(GenericAPIView):
+    queryset = UserModel.objects.all()
+
+    def post(self, *args, **kwargs):
+        user = self.get_object()
+        data = self.request.data
+        serializer = CarPosterSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=user)
+        user_serializer = UserSerializer(user)
+        return Response(user_serializer.data, status.HTTP_201_CREATED)
