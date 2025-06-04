@@ -32,6 +32,7 @@ class CarListCreateView(ListAPIView):
     serializer_class = CarPosterSerializer
     queryset = CarPosterModel.objects.all()
     filterset_class = CarFilter
+    permission_classes = (AllowAny,)
     # permission_classes = (IsAuthenticated,)
 
 class CarRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
