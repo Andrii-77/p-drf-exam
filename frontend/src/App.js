@@ -12,6 +12,11 @@ const App = () => {
             {cars.map(car => <div key={car.id}>{JSON.stringify(car)}</div>)}
         </div>
     );
+    // return (
+    //     <div>
+    //         {cars.map(car => <div key={car.id}>{JSON.stringify(car.model.model)}</div>)}
+    //     </div>
+    // );
 };
 
 export {App};
