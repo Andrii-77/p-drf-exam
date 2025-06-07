@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     BlockUserView,
+    SendEmailTestView,
     UnBlockUserView,
     UserAddCarPosterView,
     UserBlockAdminView,
@@ -16,4 +17,5 @@ urlpatterns = [
     path('/<int:pk>/to_admin', UserToAdminView.as_view(), name='user_to_admin'),
     path('/<int:pk>/block_admin', UserBlockAdminView.as_view(), name='block_admin'),
     path('/<int:pk>/cars', UserAddCarPosterView.as_view(), name='user_add_car_poster'),
+    path('/test', SendEmailTestView.as_view(), name='send_email_test'),
 ]
