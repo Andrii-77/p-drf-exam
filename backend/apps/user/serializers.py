@@ -1,6 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.db.transaction import atomic
 
 from rest_framework import serializers
+
+from core.services.email_service import EmailService
 
 from apps.car.serializers import CarPosterSerializer
 from apps.user.models import ProfileModel
@@ -47,8 +50,10 @@ class UserSerializer(serializers.ModelSerializer):
             }
         }
 
+    @atomic
     def create(self, validated_data: dict):
         profile = validated_data.pop('profile')
         user = UserModel.objects.create_user(**validated_data)
         ProfileModel.objects.create(**profile, user=user)
+        EmailService.register(user)
         return user

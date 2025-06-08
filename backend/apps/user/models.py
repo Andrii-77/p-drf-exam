@@ -25,5 +25,5 @@ class ProfileModel(BaseModel):
 
     name = models.CharField(max_length=20)
     surname = models.CharField(max_length=20)
-    phone_number = models.CharField(max_length=15, blank=True)
+    phone_number = models.CharField(max_length=15)
     user = models.OneToOneField(UserModel, on_delete=models.CASCADE, related_name='profile')
