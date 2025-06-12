@@ -27,12 +27,15 @@ class ProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
     cars = CarPosterSerializer(many=True, read_only=True)
+
     class Meta:
         model = UserModel
         fields = (
             'id',
             'email',
             'password',
+            'role',
+            'account_type',
             'is_active',
             'is_staff',
             'is_superuser',
@@ -43,7 +46,8 @@ class UserSerializer(serializers.ModelSerializer):
             'cars',
         )
         # depth = 1
-        read_only_fields = ('id', 'is_active', 'is_staff', 'is_superuser', 'last_login', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'role', 'account_type', 'is_active', 'is_staff', 'is_superuser', 'last_login',
+                            'created_at', 'updated_at')
         extra_kwargs = {
             'password': {
                 'write_only': True,

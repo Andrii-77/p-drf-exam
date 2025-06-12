@@ -81,6 +81,21 @@ class UserBlockAdminView(GenericAPIView):
 
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
+    
+class UserToSellerView(GenericAPIView):
+    def get_queryset(self):
+        return UserModel.objects.exclude(id=self.request.user.id)
+
+    # queryset = UserModel.objects.all()
+
+    def patch(self, *args, **kwargs):
+        user = self.get_object()
+        if not user.role == "seller":
+            user.role = "seller"
+            user.save()
+
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status.HTTP_200_OK)
 
 
 class UserAddCarPosterView(GenericAPIView):
