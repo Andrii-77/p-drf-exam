@@ -82,11 +82,9 @@ class UserBlockAdminView(GenericAPIView):
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
     
-class UserToSellerView(GenericAPIView):
+class UserToSellerRoleView(GenericAPIView):
     def get_queryset(self):
-        return UserModel.objects.exclude(id=self.request.user.id)
-
-    # queryset = UserModel.objects.all()
+        return UserModel.objects.all()
 
     def patch(self, *args, **kwargs):
         user = self.get_object()
@@ -97,6 +95,70 @@ class UserToSellerView(GenericAPIView):
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
 
+class UserToManagerRoleView(GenericAPIView):
+    def get_queryset(self):
+        return UserModel.objects.all()
+
+    def patch(self, *args, **kwargs):
+        user = self.get_object()
+        if not user.role == "manager":
+            user.role = "manager"
+            user.save()
+
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+class UserToAdminRoleView(GenericAPIView):
+    def get_queryset(self):
+        return UserModel.objects.all()
+
+    def patch(self, *args, **kwargs):
+        user = self.get_object()
+        if not user.role == "admin":
+            user.role = "admin"
+            user.save()
+
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+class UserToBuyerRoleView(GenericAPIView):
+    def get_queryset(self):
+        return UserModel.objects.all()
+
+    def patch(self, *args, **kwargs):
+        user = self.get_object()
+        if not user.role == "buyer":
+            user.role = "buyer"
+            user.save()
+
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+class UserToBasicAccountTypeView(GenericAPIView):
+    def get_queryset(self):
+        return UserModel.objects.all()
+
+    def patch(self, *args, **kwargs):
+        user = self.get_object()
+        if not user.account_type == "basic":
+            user.account_type = "basic"
+            user.save()
+
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+class UserToPremiumAccountTypeView(GenericAPIView):
+    def get_queryset(self):
+        return UserModel.objects.all()
+
+    def patch(self, *args, **kwargs):
+        user = self.get_object()
+        if not user.account_type == "premium":
+            user.account_type = "premium"
+            user.save()
+
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status.HTTP_200_OK)
 
 class UserAddCarPosterView(GenericAPIView):
     queryset = UserModel.objects.all()

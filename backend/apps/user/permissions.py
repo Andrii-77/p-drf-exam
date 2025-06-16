@@ -7,12 +7,12 @@ class IsSuperUser(BasePermission):
 
 class IsAdmin(BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user.is_authenticated and request.user.role == 'admin')
+        return bool(request.user and request.user.role == 'admin')
 
 class IsManager(BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user.is_authenticated and request.user.role == 'manager')
+        return bool(request.user and request.user.role == 'manager')
 
 class IsSeller(BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user.is_authenticated and request.user.role == 'seller')
+        return bool(request.user and request.user.role == 'seller')
