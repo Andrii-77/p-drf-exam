@@ -17,8 +17,10 @@ class CarModelSerializer(serializers.ModelSerializer):
         fields = ('model',)
 
 class CarPosterSerializer(serializers.ModelSerializer):
-    brand = CarBrandSerializer(read_only=True)
-    model = CarModelSerializer(read_only=True)
+    # brand = CarBrandSerializer(read_only=True)
+    # model = CarModelSerializer(read_only=True)
+    brand = CarBrandSerializer
+    model = CarModelSerializer
     class Meta:
         model = CarPosterModel
         fields = ('id', 'brand', 'model', 'description', 'price', 'currency', 'location', 'updated_at', 'created_at')

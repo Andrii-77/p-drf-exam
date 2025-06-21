@@ -5,8 +5,9 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import GenericAPIView, ListCreateAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from apps.car.serializers import CarPosterSerializer
@@ -162,10 +163,15 @@ class UserToPremiumAccountTypeView(GenericAPIView):
 
 class UserAddCarPosterView(GenericAPIView):
     queryset = UserModel.objects.all()
+    permission_classes = [IsAuthenticated]
 
     def post(self, *args, **kwargs):
         user = self.get_object()
         data = self.request.data
+        if user.account_type == 'basic' and user.cars.count() >= 1:
+            raise PermissionDenied("Користувач з базовим акаунтом може мати лише одне оголошення.")
+        if self.request.user != user:
+            raise PermissionDenied("Ви не можете створювати оголошення від імені іншого користувача.")
         serializer = CarPosterSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=user)
