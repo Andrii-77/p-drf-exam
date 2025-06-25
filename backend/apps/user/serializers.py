@@ -61,3 +61,14 @@ class UserSerializer(serializers.ModelSerializer):
         ProfileModel.objects.create(**profile, user=user)
         EmailService.register(user)
         return user
+
+    def validate(self, attrs):
+        role = attrs.get('role', getattr(self.instance, 'role', None))
+        account_type = attrs.get('account_type', getattr(self.instance, 'account_type', None))
+
+        if role != 'seller' and account_type:
+            raise serializers.ValidationError(
+                "Тип акаунта (basic/premium) може бути лише для продавців."
+            )
+        return attrs
+
