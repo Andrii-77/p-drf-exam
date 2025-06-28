@@ -131,7 +131,6 @@ class UserToBuyerRoleView(GenericAPIView):
         user = self.get_object()
         if not user.role == "buyer":
             user.role = "buyer"
-            user.account_type = ""
             user.save()
 
         serializer = UserSerializer(user)

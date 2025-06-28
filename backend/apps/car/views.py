@@ -3,14 +3,14 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated, I
 from rest_framework.request import Request
 
 from apps.car.filter import CarFilter
-from apps.car.models import CarBrandModel, CarModelModel, CarPosterModel
-from apps.car.serializers import CarBrandSerializer, CarModelSerializer, CarPosterSerializer
+from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
+from apps.car.serializers import BannedWordsSerializer, CarBrandSerializer, CarModelSerializer, CarPosterSerializer
 
 
 class CarBrandListCreateView(ListCreateAPIView):
     serializer_class = CarBrandSerializer
     queryset = CarBrandModel.objects.all()
-    filterset_class = CarFilter
+    # filterset_class = CarFilter
 
 class CarBrandRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     serializer_class = CarBrandSerializer
@@ -20,7 +20,7 @@ class CarBrandRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
 class CarModelListCreateView(ListCreateAPIView):
     serializer_class = CarModelSerializer
     queryset = CarModelModel.objects.all()
-    filterset_class = CarFilter
+    # filterset_class = CarFilter
 
 class CarModelRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     serializer_class = CarModelSerializer
@@ -38,3 +38,11 @@ class CarListCreateView(ListAPIView):
 class CarRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = CarPosterModel.objects.all()
     serializer_class = CarPosterSerializer
+
+class BannedWordsListCreateView(ListCreateAPIView):
+    serializer_class = BannedWordsSerializer
+    queryset = BannedWordsModel.objects.all()
+
+class BannedWordsRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
+    serializer_class = BannedWordsSerializer
+    queryset = BannedWordsModel.objects.all()

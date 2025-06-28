@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.car.models import CarBrandModel, CarModelModel, CarPosterModel
+from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
 
 
 class CarBrandSerializer(serializers.ModelSerializer):
@@ -29,3 +29,8 @@ class CarPosterSerializer(serializers.ModelSerializer):
         if price <= 0:
             raise serializers.ValidationError('Price must be greater than 0.')
         return price
+
+class BannedWordsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BannedWordsModel
+        fields = ('id', 'word', 'updated_at', 'created_at')

@@ -14,3 +14,4 @@ class CarFilter(filters.FilterSet):
             'price',
         )
     )
+

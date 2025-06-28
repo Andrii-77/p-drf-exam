@@ -32,6 +32,13 @@ class CurrencyChoices(models.TextChoices):
     UAH = 'UAH', 'Hryvnia'
 
 
+class StatusChoices(models.TextChoices):
+    DRAFT = 'draft', 'Чернетка'
+    PENDING = 'pending', 'На перевірці'
+    ACTIVE = 'active', 'Активне'
+    INACTIVE = 'inactive', 'Неактивне'
+
+
 class CarPosterModel(BaseModel):
     class Meta:
         db_table = 'cars'
@@ -48,3 +55,11 @@ class CarPosterModel(BaseModel):
     # currency = models.CharField(max_length=3, choices=[('USD', 'USD'), ('EUR', 'EUR'), ('UAH', 'UAH')])
     currency = models.CharField(max_length=3, choices=CurrencyChoices.choices, default=CurrencyChoices.USD)
     location = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=StatusChoices.choices, default='pending')
+    edit_attempts = models.PositiveIntegerField(default=0)  # для обмеження в 3 редагування
+
+class BannedWordsModel(BaseModel):
+    class Meta:
+        db_table = 'banned_words'
+        ordering = ('word',)
+    word = models.CharField(max_length=255, unique=True)
