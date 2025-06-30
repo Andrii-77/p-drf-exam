@@ -10,7 +10,7 @@ from apps.car.serializers import BannedWordsSerializer, CarBrandSerializer, CarM
 class CarBrandListCreateView(ListCreateAPIView):
     serializer_class = CarBrandSerializer
     queryset = CarBrandModel.objects.all()
-    # filterset_class = CarFilter
+    filterset_class = CarFilter
 
 class CarBrandRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     serializer_class = CarBrandSerializer
@@ -20,7 +20,7 @@ class CarBrandRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
 class CarModelListCreateView(ListCreateAPIView):
     serializer_class = CarModelSerializer
     queryset = CarModelModel.objects.all()
-    # filterset_class = CarFilter
+    filterset_class = CarFilter
 
 class CarModelRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     serializer_class = CarModelSerializer
