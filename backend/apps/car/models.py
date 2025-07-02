@@ -34,7 +34,7 @@ class CurrencyChoices(models.TextChoices):
 
 class StatusChoices(models.TextChoices):
     DRAFT = 'draft', 'Чернетка'
-    PENDING = 'pending', 'На перевірці'
+    # PENDING = 'pending', 'На перевірці'  # Це може знадобитися в майбутньому.
     ACTIVE = 'active', 'Активне'
     INACTIVE = 'inactive', 'Неактивне'
 
@@ -55,7 +55,7 @@ class CarPosterModel(BaseModel):
     # currency = models.CharField(max_length=3, choices=[('USD', 'USD'), ('EUR', 'EUR'), ('UAH', 'UAH')])
     currency = models.CharField(max_length=3, choices=CurrencyChoices.choices, default=CurrencyChoices.USD)
     location = models.CharField(max_length=100)
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default='pending')
+    status = models.CharField(max_length=10, choices=StatusChoices.choices, default='draft')
     edit_attempts = models.PositiveIntegerField(default=0)  # для обмеження в 3 редагування
 
 class BannedWordsModel(BaseModel):
