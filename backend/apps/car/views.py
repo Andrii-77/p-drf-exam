@@ -5,6 +5,7 @@ from rest_framework.request import Request
 from apps.car.filter import CarFilter
 from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
 from apps.car.serializers import BannedWordsSerializer, CarBrandSerializer, CarModelSerializer, CarPosterSerializer
+from apps.user.permissions import EditCarPosterPermission
 
 
 class CarBrandListCreateView(ListCreateAPIView):
@@ -38,6 +39,7 @@ class CarListCreateView(ListAPIView):
 class CarRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = CarPosterModel.objects.all()
     serializer_class = CarPosterSerializer
+    permission_classes = [EditCarPosterPermission]
 
 class BannedWordsListCreateView(ListCreateAPIView):
     serializer_class = BannedWordsSerializer
