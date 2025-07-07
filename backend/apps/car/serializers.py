@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from core.services.banned_words_service import contains_bad_words
+from core.services.email_service import EmailService
 
 from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
 
@@ -55,7 +56,7 @@ class CarPosterSerializer(serializers.ModelSerializer):
 
             if instance.edit_attempts >= 3:
                 instance.status = 'inactive'
-                # send_email_to_manager(instance)
+                EmailService. manager_email_for_car_poster_edit(car=instance)
             else:
                 instance.status = 'draft'
 

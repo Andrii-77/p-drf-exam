@@ -42,3 +42,12 @@ class EmailService:
             context={'url': url},
             subject="Recovery"
         )
+        
+    @classmethod
+    def manager_email_for_car_poster_edit(cls, car):
+       cls.__send_email(
+           to='bimber@i.ua', #тут мають бути пошти менеджерів
+           template_name='for_car_poster_edit.html',
+           context={'id': car.id },
+           subject='Оголошення потребує ручної модерації'
+       )
