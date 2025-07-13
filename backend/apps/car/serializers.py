@@ -27,15 +27,18 @@ class CarPosterSerializer(serializers.ModelSerializer):
     model = CarModelSerializer
 
     class Meta:
-        model = CarPosterModel
-        fields = ('id', 'brand', 'model', 'description', 'price', 'currency', 'location', 'status', 'edit_attempts',
+        # model = CarPosterModel
+        # fields = ('id', 'brand', 'model', 'description', 'price', 'currency', 'location', 'status', 'edit_attempts',
+        #           'updated_at', 'created_at')
+        fields = ('id', 'brand', 'model', 'description', 'original_price', 'original_currency', 'price_usd',
+                  'price_eur', 'price_uah', 'exchange_rate_used', 'location', 'status', 'edit_attempts',
                   'updated_at', 'created_at')
         # read_only_fields = ['status', 'edit_attempts']  # щоб не підміняли вручну
 
-    def validate_price(self, price):
-        if price <= 0:
+    def validate_original_price(self, original_price):
+        if original_price <= 0:
             raise serializers.ValidationError('Price must be greater than 0.')
-        return price
+        return original_price
 
     def create(self, validated_data):
         description = validated_data.get('description', '')
@@ -56,7 +59,7 @@ class CarPosterSerializer(serializers.ModelSerializer):
 
             if instance.edit_attempts >= 3:
                 instance.status = 'inactive'
-                EmailService. manager_email_for_car_poster_edit(car=instance)
+                EmailService.manager_email_for_car_poster_edit(car=instance)
             else:
                 instance.status = 'draft'
 

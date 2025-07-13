@@ -50,10 +50,19 @@ class CarPosterModel(BaseModel):
     # brand = models.CharField(max_length=50)
     # model = models.CharField(max_length=50)
     description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=2,
-                                validators=[V.MinValueValidator(1), V.MaxValueValidator(99999999.99)])
+    # price = models.DecimalField(max_digits=10, decimal_places=2,
+    #                            validators=[V.MinValueValidator(1), V.MaxValueValidator(99999999.99)])
     # currency = models.CharField(max_length=3, choices=[('USD', 'USD'), ('EUR', 'EUR'), ('UAH', 'UAH')])
-    currency = models.CharField(max_length=3, choices=CurrencyChoices.choices, default=CurrencyChoices.USD)
+    # currency = models.CharField(max_length=3, choices=CurrencyChoices.choices, default=CurrencyChoices.USD)
+
+    original_price = models.DecimalField(max_digits=10, decimal_places=2,
+                                         validators=[V.MinValueValidator(1), V.MaxValueValidator(99999999.99)])
+    original_currency = models.CharField(max_length=3, choices=CurrencyChoices.choices)
+    price_usd = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    price_eur = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    price_uah = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    exchange_rate_used = models.JSONField(null=True, blank=True)
+
     location = models.CharField(max_length=100)
     status = models.CharField(max_length=10, choices=StatusChoices.choices, default='draft')
     edit_attempts = models.PositiveIntegerField(default=0)  # для обмеження в 3 редагування
