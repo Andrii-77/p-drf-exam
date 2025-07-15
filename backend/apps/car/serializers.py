@@ -27,7 +27,7 @@ class CarPosterSerializer(serializers.ModelSerializer):
     model = CarModelSerializer
 
     class Meta:
-        # model = CarPosterModel
+        model = CarPosterModel
         # fields = ('id', 'brand', 'model', 'description', 'price', 'currency', 'location', 'status', 'edit_attempts',
         #           'updated_at', 'created_at')
         fields = ('id', 'brand', 'model', 'description', 'original_price', 'original_currency', 'price_usd',
