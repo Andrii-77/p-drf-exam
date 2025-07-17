@@ -1,6 +1,9 @@
+from rest_framework import status
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
-from rest_framework.request import Request
+from rest_framework.response import Response
+
+from core.services.banned_words_service import contains_bad_words
 
 from apps.car.filter import CarFilter
 from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
@@ -40,6 +43,29 @@ class CarRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = CarPosterModel.objects.all()
     serializer_class = CarPosterSerializer
     permission_classes = [EditCarPosterPermission]
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+
+        if contains_bad_words(instance.description):
+            if instance.edit_attempts >= 3:
+                message = (
+                    "Закінчились три спроби редагування опису. Оголошення передано менеджеру на перевірку."
+                )
+            else:
+                message = "Опис містить нецензурну лексику. Оголошення збережено зі статусом 'чернетка'."
+        else:
+            message = "Опис оновлено. Оголошення активоване."
+
+        response_data = self.get_serializer(instance).data
+        response_data['message'] = message
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
 
 class BannedWordsListCreateView(ListCreateAPIView):
     serializer_class = BannedWordsSerializer

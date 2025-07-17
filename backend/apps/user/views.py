@@ -10,6 +10,8 @@ from rest_framework.generics import GenericAPIView, ListCreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from core.services.banned_words_service import contains_bad_words
+
 from apps.car.serializers import CarPosterSerializer
 from apps.user.serializers import UserSerializer
 
@@ -82,7 +84,8 @@ class UserBlockAdminView(GenericAPIView):
 
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
-    
+
+
 class UserToSellerRoleBasicAccountTypeView(GenericAPIView):
     def get_queryset(self):
         return UserModel.objects.all()
@@ -97,6 +100,7 @@ class UserToSellerRoleBasicAccountTypeView(GenericAPIView):
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
 
+
 class UserToManagerRoleView(GenericAPIView):
     def get_queryset(self):
         return UserModel.objects.all()
@@ -109,6 +113,7 @@ class UserToManagerRoleView(GenericAPIView):
 
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
+
 
 class UserToAdminRoleView(GenericAPIView):
     def get_queryset(self):
@@ -123,6 +128,7 @@ class UserToAdminRoleView(GenericAPIView):
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
 
+
 class UserToBuyerRoleView(GenericAPIView):
     def get_queryset(self):
         return UserModel.objects.all()
@@ -135,6 +141,7 @@ class UserToBuyerRoleView(GenericAPIView):
 
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
+
 
 class UserSellerToBasicAccountTypeView(GenericAPIView):
     def get_queryset(self):
@@ -149,6 +156,7 @@ class UserSellerToBasicAccountTypeView(GenericAPIView):
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
 
+
 class UserSellerToPremiumAccountTypeView(GenericAPIView):
     def get_queryset(self):
         return UserModel.objects.all()
@@ -161,6 +169,7 @@ class UserSellerToPremiumAccountTypeView(GenericAPIView):
 
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
+
 
 class UserAddCarPosterView(GenericAPIView):
     queryset = UserModel.objects.all()
@@ -175,15 +184,35 @@ class UserAddCarPosterView(GenericAPIView):
             raise PermissionDenied("Ви не можете створювати оголошення від імені іншого користувача.")
         serializer = CarPosterSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(user=user)
-        user_serializer = UserSerializer(user)
-        return Response(user_serializer.data, status.HTTP_201_CREATED)
+        # serializer.save(user=user)
+        # user_serializer = UserSerializer(user)
+        # return Response(user_serializer.data, status.HTTP_201_CREATED)
+        instance = serializer.save(user=user)
+
+        # Додаємо повідомлення в залежності від опису
+        if contains_bad_words(instance.description):
+            message = "Опис створеного оголошення містить нецензурну лексику. Оголошення збережено зі статусом 'чорновик'."
+        else:
+            message = "Оголошення успішно створене та активоване."
+
+        # user_serializer = UserSerializer(user)
+        # response_data = user_serializer.data
+        # response_data['message'] = message
+        # return Response(response_data, status=status.HTTP_201_CREATED)
+        # Тут повідомлення йде після опису юзері і його списку авто.
+
+        car_data = CarPosterSerializer(instance).data
+        car_data['message'] = message
+        return Response(car_data, status=status.HTTP_201_CREATED)
+        # Тут виводиться тільки створене авто і в кінці йде повідомлення до цього оголошення.
+
 
 class SendEmailTestView(GenericAPIView):
     permission_classes = (AllowAny,)
+
     def get(self, *args, **kwargs):
         template = get_template('test_email.html')
-        html_content = template.render({'name':'DJANGO'})
+        html_content = template.render({'name': 'DJANGO'})
         msg = EmailMultiAlternatives(
             subject="Test Email",
             from_email=os.environ.get('EMAIL_HOST_USER'),

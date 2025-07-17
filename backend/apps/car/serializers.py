@@ -44,13 +44,18 @@ class CarPosterSerializer(serializers.ModelSerializer):
         description = validated_data.get('description', '')
         if contains_bad_words(description):
             validated_data['status'] = 'draft'
-            validated_data['edit_attempts'] = 1
+            # validated_data['edit_attempts'] = 1
         else:
             validated_data['status'] = 'active'
-            validated_data['edit_attempts'] = 0
+            # validated_data['edit_attempts'] = 0
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
+        # Спочатку оновлюємо всі звичайні поля (включно з description)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        # Тепер обробляємо модерацію description
         description = validated_data.get('description', instance.description)
 
         if contains_bad_words(description):
