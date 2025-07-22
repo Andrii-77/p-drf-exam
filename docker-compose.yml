@@ -43,3 +43,17 @@ services:
     restart: on-failure
     command: >
       sh -c "celery -A configs worker -l info"
+
+  celery-beat:
+    build:
+      context: .
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - app
+    restart: on-failure
+    command: >
+      sh -c "celery -A configs beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
