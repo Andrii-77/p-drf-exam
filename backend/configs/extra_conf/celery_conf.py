@@ -8,9 +8,8 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
     'update-exchange-rates-daily': {
-        'task': 'backend.configs.extra_conf.celery_conf.update_exchange_rates_task',
-        # 'task': 'apps.exchange_rates.tasks.update_exchange_rates_task',
-        'schedule': crontab(),  # щохвилини
-        # 'schedule': crontab(hour=0, minute=0),  # щодня о 00:00
+        'task': 'core.tasks.exchange_rates_tasks.update_exchange_rates_task',
+        'schedule': crontab(hour=8, minute=55),  # щодня о 08:55
+        # 'schedule': crontab(),  # щохвилини
     },
 }
