@@ -175,6 +175,12 @@ class UserAddCarPosterView(GenericAPIView):
     queryset = UserModel.objects.all()
     permission_classes = [IsAuthenticated]
 
+    # def get_queryset(self):
+    #     user = self.get_object()
+    #     user_serializer = UserSerializer(user)
+    #     return Response(user_serializer.data, status=status.HTTP_200_OK)
+    # Треба доробити метод гет, для виводу юзера з його автомобілями.
+
     def post(self, *args, **kwargs):
         user = self.get_object()
         data = self.request.data
