@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from core.services.banned_words_service import contains_bad_words
 from core.services.currency_conversion_service import CurrencyConverter
+from core.services.currency_conversion_utils import apply_currency_conversion
 from core.services.email_service import EmailService
 
 from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
@@ -56,7 +57,7 @@ class CarPosterSerializer(serializers.ModelSerializer):
 
         if not price:
             raise serializers.ValidationError("Щоб змінити валюту, також передайте ціну.")
-        if not not currency or currency == None:
+        if not currency:
             raise serializers.ValidationError("Щоб змінити ціну, також передайте валюту.")
 
         #     rates = self.get_latest_exchange_rates()
@@ -105,15 +106,19 @@ class CarPosterSerializer(serializers.ModelSerializer):
         #
         #     return rates_dict
 
-        try:
-            rates = CurrencyConverter.get_latest_rates()
-            converted = CurrencyConverter.convert_price(price, currency, rates)
+        # try:
+        #     rates = CurrencyConverter.get_latest_rates()
+        #     converted = CurrencyConverter.convert_price(price, currency, rates)
+        #
+        #     attrs.update(converted)
+        # except (InvalidOperation, KeyError, TypeError, ValueError) as e:
+        #     logger.exception("Помилка при конвертації валюти:")
+        #     raise serializers.ValidationError(f"Помилка при конвертації валюти: {e}")
+        #
+        # return attrs
 
-            attrs.update(converted)
-        except (InvalidOperation, KeyError, TypeError, ValueError) as e:
-            logger.exception("Помилка при конвертації валюти:")
-            raise serializers.ValidationError(f"Помилка при конвертації валюти: {e}")
-
+        converted = apply_currency_conversion(price, currency)
+        attrs.update(converted)
         return attrs
 
         # rates = CurrencyConverter.get_latest_rates()
@@ -161,7 +166,6 @@ class CarPosterSerializer(serializers.ModelSerializer):
         #     raise serializers.ValidationError("Щоб змінити валюту, також передайте ціну.")
 
         # Якщо змінено ціну і валюту — перерахунок
-        if 'original_price' in validated_data and 'original_currency' in validated_data:
 
             # currency = validated_data.get("original_currency", instance.original_currency)
             #             # price = validated_data.get("original_price", instance.original_price)
@@ -183,21 +187,30 @@ class CarPosterSerializer(serializers.ModelSerializer):
             #             #     instance.price_usd = round(price / rates['USD'], 2)
             #             #     instance.price_eur = round(price / rates['EUR'], 2)
 
-            if 'original_price' in validated_data and 'original_currency' in validated_data:
-                try:
-                    rates = CurrencyConverter.get_latest_rates()
-                    converted = CurrencyConverter.convert_price(
-                        validated_data['original_price'],
-                        validated_data['original_currency'],
-                        rates
-                    )
-                    instance.price_usd = converted['price_usd']
-                    instance.price_eur = converted['price_eur']
-                    instance.price_uah = converted['price_uah']
-                    instance.exchange_rate_used = converted['exchange_rate_used']
-                except Exception as e:
-                    logger.exception("Помилка при оновленні ціни:")
-                    raise serializers.ValidationError(f"Помилка при оновленні ціни: {e}")
+        if 'original_price' in validated_data and 'original_currency' in validated_data:
+            # try:
+            #     rates = CurrencyConverter.get_latest_rates()
+            #     converted = CurrencyConverter.convert_price(
+            #         validated_data['original_price'],
+            #         validated_data['original_currency'],
+            #         rates
+            #     )
+            #     instance.price_usd = converted['price_usd']
+            #     instance.price_eur = converted['price_eur']
+            #     instance.price_uah = converted['price_uah']
+            #     instance.exchange_rate_used = converted['exchange_rate_used']
+            # except Exception as e:
+            #     logger.exception("Помилка при оновленні ціни:")
+            #     raise serializers.ValidationError(f"Помилка при оновленні ціни: {e}")
+
+            converted = apply_currency_conversion(
+                validated_data['original_price'],
+                validated_data['original_currency']
+            )
+            instance.price_usd = converted['price_usd']
+            instance.price_eur = converted['price_eur']
+            instance.price_uah = converted['price_uah']
+            instance.exchange_rate_used = converted['exchange_rate_used']
 
         instance.save()
         return instance
