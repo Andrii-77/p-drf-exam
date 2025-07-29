@@ -62,6 +62,21 @@ class UserSerializer(serializers.ModelSerializer):
         EmailService.register(user)
         return user
 
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if profile_data:
+            profile = instance.profile
+            for attr, value in profile_data.items():
+                setattr(profile, attr, value)
+            profile.save()
+
+        return instance
+
     def validate(self, attrs):
         role = attrs.get('role', getattr(self.instance, 'role', None))
         account_type = attrs.get('account_type', getattr(self.instance, 'account_type', None))

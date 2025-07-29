@@ -6,13 +6,14 @@ from django.template.loader import get_template
 
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.generics import GenericAPIView, ListCreateAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from core.services.banned_words_service import contains_bad_words
 
 from apps.car.serializers import CarPosterSerializer
+from apps.user.permissions import IsOwnerOrManagerOrAdmin
 from apps.user.serializers import UserSerializer
 
 UserModel = get_user_model()
@@ -227,3 +228,12 @@ class SendEmailTestView(GenericAPIView):
         msg.attach_alternative(html_content, "text/html")
         msg.send()
         return Response({'message': 'Email sent!'}, status.HTTP_200_OK)
+
+class UserDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = UserModel.objects.all()
+    serializer_class = UserSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]  # будь-хто може побачити юзера
+        return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]  # редагувати/видалити — тільки з правами

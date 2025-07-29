@@ -6,6 +6,7 @@ from .views import (
     UnBlockUserView,
     UserAddCarPosterView,
     UserBlockAdminView,
+    UserDetailView,
     UserListCreateView,
     UserSellerToBasicAccountTypeView,
     UserSellerToPremiumAccountTypeView,
@@ -18,6 +19,7 @@ from .views import (
 
 urlpatterns = [
     path('', UserListCreateView.as_view(), name='user_list_create'),
+    path('/<int:pk>', UserDetailView.as_view(), name='user-detail'),
     path('/<int:pk>/block', BlockUserView.as_view(), name='user_block'),
     path('/<int:pk>/unblock', UnBlockUserView.as_view(), name='user_unblock'),
     path('/<int:pk>/to_admin', UserToAdminView.as_view(), name='user_to_admin'),
