@@ -9,6 +9,8 @@ from core.services.currency_conversion_utils import apply_currency_conversion
 from core.services.email_service import EmailService
 
 from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
+from apps.statistic.services import get_average_prices
+from apps.user.utils.access import has_premium_access
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +34,8 @@ class CarPosterSerializer(serializers.ModelSerializer):
     # model = CarModelSerializer(read_only=True)
     brand = CarBrandSerializer
     model = CarModelSerializer
+    region_average_price = serializers.SerializerMethodField()
+    country_average_price = serializers.SerializerMethodField()
 
     class Meta:
         model = CarPosterModel
@@ -39,7 +43,7 @@ class CarPosterSerializer(serializers.ModelSerializer):
         #           'updated_at', 'created_at')
         fields = ('id', 'brand', 'model', 'description', 'original_price', 'original_currency', 'price_usd',
                   'price_eur', 'price_uah', 'exchange_rate_used', 'location', 'status', 'edit_attempts',
-                  'updated_at', 'created_at')
+                  'region_average_price', 'country_average_price', 'updated_at', 'created_at')
         # read_only_fields = ['status', 'edit_attempts']  # щоб не підміняли вручну
 
     def validate_original_price(self, original_price):
@@ -125,6 +129,18 @@ class CarPosterSerializer(serializers.ModelSerializer):
         # converted = CurrencyConverter.convert_price(price, currency, rates)
         # attrs.update(converted)
 
+    def get_region_average_price(self, obj):
+        user = self.context['request'].user
+        if has_premium_access(user, obj.user):
+            return get_average_prices(obj)['region_average_price']
+        return "Ця інформація доступна тільки для преміум-продавця, менеджера або адміністратора"
+
+    def get_country_average_price(self, obj):
+        user = self.context['request'].user
+        if has_premium_access(user, obj.user):
+            return get_average_prices(obj)['region_average_price']
+        return "Ця інформація доступна тільки для преміум-продавця, менеджера або адміністратора"
+
     def create(self, validated_data):
         description = validated_data.get('description', '')
         if contains_bad_words(description):
@@ -167,25 +183,25 @@ class CarPosterSerializer(serializers.ModelSerializer):
 
         # Якщо змінено ціну і валюту — перерахунок
 
-            # currency = validated_data.get("original_currency", instance.original_currency)
-            #             # price = validated_data.get("original_price", instance.original_price)
-            #             # rates = self.get_latest_exchange_rates()
-            #             #
-            #             # # ❗️Фікс — перетворення Decimal → str
-            #             # instance.exchange_rate_used = {k: str(v) for k, v in rates.items()}
-            #             #
-            #             # if currency == 'USD':
-            #             #     instance.price_usd = price
-            #             #     instance.price_uah = round(price * rates['USD'], 2)
-            #             #     instance.price_eur = round((price * rates['USD']) / rates['EUR'], 2)
-            #             # elif currency == 'EUR':
-            #             #     instance.price_eur = price
-            #             #     instance.price_uah = round(price * rates['EUR'], 2)
-            #             #     instance.price_usd = round((price * rates['EUR']) / rates['USD'], 2)
-            #             # elif currency == 'UAH':
-            #             #     instance.price_uah = price
-            #             #     instance.price_usd = round(price / rates['USD'], 2)
-            #             #     instance.price_eur = round(price / rates['EUR'], 2)
+        # currency = validated_data.get("original_currency", instance.original_currency)
+        #             # price = validated_data.get("original_price", instance.original_price)
+        #             # rates = self.get_latest_exchange_rates()
+        #             #
+        #             # # ❗️Фікс — перетворення Decimal → str
+        #             # instance.exchange_rate_used = {k: str(v) for k, v in rates.items()}
+        #             #
+        #             # if currency == 'USD':
+        #             #     instance.price_usd = price
+        #             #     instance.price_uah = round(price * rates['USD'], 2)
+        #             #     instance.price_eur = round((price * rates['USD']) / rates['EUR'], 2)
+        #             # elif currency == 'EUR':
+        #             #     instance.price_eur = price
+        #             #     instance.price_uah = round(price * rates['EUR'], 2)
+        #             #     instance.price_usd = round((price * rates['EUR']) / rates['USD'], 2)
+        #             # elif currency == 'UAH':
+        #             #     instance.price_uah = price
+        #             #     instance.price_usd = round(price / rates['USD'], 2)
+        #             #     instance.price_eur = round(price / rates['EUR'], 2)
 
         if 'original_price' in validated_data and 'original_currency' in validated_data:
             # try:

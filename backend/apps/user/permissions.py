@@ -1,6 +1,8 @@
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
+from apps.user.utils.access import has_premium_access
+
 
 class IsSuperUser(BasePermission):
     def has_permission(self, request, view):
@@ -71,3 +73,16 @@ class IsOwnerOrManagerOrAdmin(BasePermission):
             return True  # власник акаунта
 
         raise PermissionDenied("У вас немає прав доступу до цього користувача.")
+
+class HasPremiumAccessPermission(BasePermission):
+    """
+    Дозволяє доступ користувачу, якщо:
+    - він є власником об'єкта і має тип акаунту 'premium'
+    - або має роль 'manager' чи 'admin'
+    """
+
+    def has_object_permission(self, request, view, obj):
+        def has_object_permission(self, request, view, obj):
+            if has_premium_access(request.user, obj.user):
+                return True
+            raise PermissionDenied("Доступ дозволений лише преміум-продавцю, менеджеру або адміну.")

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'apps.user',
     'apps.car',
     'apps.exchange_rates',
+    'apps.statistic',
 ]
 
 MIDDLEWARE = [
