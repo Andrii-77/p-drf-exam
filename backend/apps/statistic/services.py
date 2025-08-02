@@ -1,6 +1,10 @@
+from datetime import timedelta
+
 from django.db.models import Avg
+from django.utils import timezone
 
 from apps.car.models import CarPosterModel
+from apps.statistic.models import CarViewModel
 
 
 def get_average_prices(car: CarPosterModel):
@@ -40,4 +44,20 @@ def get_average_prices(car: CarPosterModel):
             "eur": round(country_avg["eur"], 2),
             "uah": round(country_avg["uah"], 2),
         },
+    }
+
+# Щоб уникати повторних звернень до БД
+def get_view_counts(car):
+    now_ts = timezone.now()
+    day_ago = now_ts - timedelta(days=1)
+    week_ago = now_ts - timedelta(weeks=1)
+    month_ago = now_ts - timedelta(days=30)
+
+    recent_views = CarViewModel.objects.filter(car=car, timestamp__gte=month_ago)
+
+    return {
+        "total_views": CarViewModel.objects.filter(car=car).count(),  # залишаємо окремо
+        "daily_views": recent_views.filter(timestamp__gte=day_ago).count(),
+        "weekly_views": recent_views.filter(timestamp__gte=week_ago).count(),
+        "monthly_views": recent_views.count(),
     }

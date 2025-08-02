@@ -9,7 +9,7 @@ from core.services.currency_conversion_utils import apply_currency_conversion
 from core.services.email_service import EmailService
 
 from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
-from apps.statistic.services import get_average_prices
+from apps.statistic.services import get_average_prices, get_view_counts
 from apps.user.utils.access import has_premium_access
 
 logger = logging.getLogger(__name__)
@@ -36,6 +36,10 @@ class CarPosterSerializer(serializers.ModelSerializer):
     model = CarModelSerializer
     region_average_price = serializers.SerializerMethodField()
     country_average_price = serializers.SerializerMethodField()
+    total_views = serializers.SerializerMethodField()
+    daily_views = serializers.SerializerMethodField()
+    weekly_views = serializers.SerializerMethodField()
+    monthly_views = serializers.SerializerMethodField()
 
     class Meta:
         model = CarPosterModel
@@ -43,7 +47,8 @@ class CarPosterSerializer(serializers.ModelSerializer):
         #           'updated_at', 'created_at')
         fields = ('id', 'brand', 'model', 'description', 'original_price', 'original_currency', 'price_usd',
                   'price_eur', 'price_uah', 'exchange_rate_used', 'location', 'status', 'edit_attempts',
-                  'region_average_price', 'country_average_price', 'updated_at', 'created_at')
+                  'region_average_price', 'country_average_price', 'total_views', 'daily_views', 'weekly_views',
+                  'monthly_views', 'updated_at', 'created_at')
         # read_only_fields = ['status', 'edit_attempts']  # щоб не підміняли вручну
 
     def validate_original_price(self, original_price):
@@ -129,17 +134,40 @@ class CarPosterSerializer(serializers.ModelSerializer):
         # converted = CurrencyConverter.convert_price(price, currency, rates)
         # attrs.update(converted)
 
-    def get_region_average_price(self, obj):
+    def _can_view_stats(self, obj):
         user = self.context['request'].user
-        if has_premium_access(user, obj.user):
+        return has_premium_access(user, obj.user)
+
+    def get_region_average_price(self, obj):
+        if self._can_view_stats(obj):
             return get_average_prices(obj)['region_average_price']
-        return "Ця інформація доступна тільки для преміум-продавця, менеджера або адміністратора"
+        return "Ця інформація доступна тільки для преміум-продавця власника оголошення, менеджера або адміністратора"
 
     def get_country_average_price(self, obj):
-        user = self.context['request'].user
-        if has_premium_access(user, obj.user):
+        if self._can_view_stats(obj):
             return get_average_prices(obj)['region_average_price']
-        return "Ця інформація доступна тільки для преміум-продавця, менеджера або адміністратора"
+        return "Ця інформація доступна тільки для преміум-продавця власника оголошення, менеджера або адміністратора"
+
+    def get_total_views(self, obj):
+        if self._can_view_stats(obj):
+            return get_view_counts(obj)['total_views']
+        return "Ця інформація доступна тільки для преміум-продавця власника оголошення, менеджера або адміністратора”"
+
+    def get_daily_views(self, obj):
+        if self._can_view_stats(obj):
+            return get_view_counts(obj)['daily_views']
+        return "Ця інформація доступна тільки для преміум-продавця власника оголошення, менеджера або адміністратора”"
+
+    def get_weekly_views(self, obj):
+        if self._can_view_stats(obj):
+            return get_view_counts(obj)['weekly_views']
+        return "Ця інформація доступна тільки для преміум-продавця власника оголошення, менеджера або адміністратора”"
+
+    def get_monthly_views(self, obj):
+        if self._can_view_stats(obj):
+            return get_view_counts(obj)['monthly_views']
+        return "Ця інформація доступна тільки для преміум-продавця власника оголошення, менеджера або адміністратора”"
+
 
     def create(self, validated_data):
         description = validated_data.get('description', '')

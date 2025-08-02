@@ -82,7 +82,6 @@ class HasPremiumAccessPermission(BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        def has_object_permission(self, request, view, obj):
-            if has_premium_access(request.user, obj.user):
-                return True
-            raise PermissionDenied("Доступ дозволений лише преміум-продавцю, менеджеру або адміну.")
+        if has_premium_access(request.user, obj.user):
+            return True
+        raise PermissionDenied("Доступ дозволений лише преміум-продавцю, менеджеру або адміну.")

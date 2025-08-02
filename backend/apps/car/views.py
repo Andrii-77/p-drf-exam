@@ -8,6 +8,7 @@ from core.services.banned_words_service import contains_bad_words
 from apps.car.filter import CarFilter
 from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
 from apps.car.serializers import BannedWordsSerializer, CarBrandSerializer, CarModelSerializer, CarPosterSerializer
+from apps.statistic.models import CarViewModel
 from apps.user.permissions import EditCarPosterPermission
 
 
@@ -43,6 +44,22 @@ class CarRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = CarPosterModel.objects.all()
     serializer_class = CarPosterSerializer
     permission_classes = [EditCarPosterPermission]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    def retrieve(self, request, *args, **kwargs):
+        response = super().retrieve(request, *args, **kwargs)
+
+        car = self.get_object()
+
+        # Не записуємо перегляд, якщо користувач — власник
+        if not request.user.is_authenticated or request.user != car.user:
+            CarViewModel.objects.create(car=car)
+
+        return response
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
