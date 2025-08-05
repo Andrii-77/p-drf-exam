@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'django_celery_beat',
     'django_celery_results',
+    'django.contrib.sessions',
 
     # my_apps
     'core',
@@ -56,6 +57,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
 ]
 
 ROOT_URLCONF = 'configs.urls'
@@ -137,3 +139,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 APPEND_SLASH = False
 
 CELERY_BEAT_SCHEDULE = celery_conf.CELERY_BEAT_SCHEDULE
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'

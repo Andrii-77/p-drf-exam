@@ -104,13 +104,20 @@ def register_car_view(request, car):
     """
     user = request.user if request.user.is_authenticated else None
     ip_address = get_client_ip(request) or "unknown"
-    session_key = request.session.session_key
+    # session_key = request.session.session_key
+    #
+    # if not session_key:
+    #     request.session.create()
+    #     session_key = request.session.session_key
+    # session_key = session_key or "anonymous"
+    # даю далі коротший код, тому це коментую.
 
-    if not session_key:
-        request.session.create()
-        session_key = request.session.session_key
+    # Сесія
+    session = request.session
+    if not session.session_key:
+        session.create()
 
-    session_key = session_key or "anonymous"
+    session_key = session.session_key or "anonymous"
 
     if user and car.user == user:
         return  # Не враховуємо перегляд власника
@@ -118,7 +125,7 @@ def register_car_view(request, car):
     if can_register_view(car, ip_address=ip_address, session_key=session_key, user=user):
         CarViewModel.objects.create(
             car=car,
-            ip_address=ip_address or "unknown",
-            session_key=session_key or "anonymous",
+            ip_address=ip_address,
+            session_key=session_key,
             user=user
         )
