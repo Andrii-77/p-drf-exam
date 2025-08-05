@@ -46,6 +46,7 @@ def get_average_prices(car: CarPosterModel):
         },
     }
 
+
 # Щоб уникати повторних звернень до БД
 def get_view_counts(car):
     now_ts = timezone.now()
@@ -61,3 +62,63 @@ def get_view_counts(car):
         "weekly_views": recent_views.filter(timestamp__gte=week_ago).count(),
         "monthly_views": recent_views.count(),
     }
+
+
+def get_client_ip(request):
+    """Отримує IP-адресу користувача з запиту."""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0]
+    return request.META.get('REMOTE_ADDR')
+
+
+def can_register_view(car, ip_address=None, session_key=None, user=None):
+    """
+    Перевіряє, чи можна зареєструвати перегляд авто.
+    Один перегляд за годину з user / session / IP.
+    """
+    time_limit = timezone.now() - timedelta(hours=1)
+
+    filters = {
+        'car': car,
+        'timestamp__gte': time_limit,  # Якщо використовувати created_at то прописати: 'created_at__gte': time_limit
+    }
+
+    if user and user.is_authenticated:
+        filters['user'] = user
+    elif session_key:
+        filters['session_key'] = session_key
+    elif ip_address:
+        filters['ip_address'] = ip_address
+    else:
+        # return False  # немає способу ідентифікувати — не реєструємо
+        return True # немає жодної ідентифікації — але дозволяємо реєстрацію (перегляд унікальний)
+
+    return not CarViewModel.objects.filter(**filters).exists()
+
+
+def register_car_view(request, car):
+    """
+    Реєструє перегляд оголошення, якщо дозволено.
+    Не враховує перегляд власника.
+    """
+    user = request.user if request.user.is_authenticated else None
+    ip_address = get_client_ip(request) or "unknown"
+    session_key = request.session.session_key
+
+    if not session_key:
+        request.session.create()
+        session_key = request.session.session_key
+
+    session_key = session_key or "anonymous"
+
+    if user and car.user == user:
+        return  # Не враховуємо перегляд власника
+
+    if can_register_view(car, ip_address=ip_address, session_key=session_key, user=user):
+        CarViewModel.objects.create(
+            car=car,
+            ip_address=ip_address or "unknown",
+            session_key=session_key or "anonymous",
+            user=user
+        )

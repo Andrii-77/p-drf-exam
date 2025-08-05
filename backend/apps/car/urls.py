@@ -13,7 +13,7 @@ from apps.car.views import (
 
 urlpatterns = [
     path("", CarListCreateView.as_view()),
-    path("/<int:pk>", CarRetrieveUpdateDestroyView.as_view()),
+    path("/<int:pk>", CarRetrieveUpdateDestroyView.as_view(), name='car-detail'),
     path("/brands", CarBrandListCreateView.as_view()),
     path("/brands/<int:pk>", CarBrandRetrieveUpdateDestroyView.as_view()),
     path("/models", CarModelListCreateView.as_view()),

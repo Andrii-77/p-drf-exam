@@ -9,6 +9,7 @@ from apps.car.filter import CarFilter
 from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
 from apps.car.serializers import BannedWordsSerializer, CarBrandSerializer, CarModelSerializer, CarPosterSerializer
 from apps.statistic.models import CarViewModel
+from apps.statistic.services import register_car_view
 from apps.user.permissions import EditCarPosterPermission
 
 
@@ -50,14 +51,23 @@ class CarRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         context['request'] = self.request
         return context
 
+    # def retrieve(self, request, *args, **kwargs):
+    #     response = super().retrieve(request, *args, **kwargs)
+    #
+    #     car = self.get_object()
+    #
+    #     # Не записуємо перегляд, якщо користувач — власник
+    #     if not request.user.is_authenticated or request.user != car.user:
+    #         CarViewModel.objects.create(car=car)
+    #
+    #     return response
+
     def retrieve(self, request, *args, **kwargs):
+        car = self.get_object()
         response = super().retrieve(request, *args, **kwargs)
 
-        car = self.get_object()
-
-        # Не записуємо перегляд, якщо користувач — власник
-        if not request.user.is_authenticated or request.user != car.user:
-            CarViewModel.objects.create(car=car)
+        # Реєстрація перегляду (з перевіркою дубліката і виключенням власника)
+        register_car_view(request, car)
 
         return response
 
