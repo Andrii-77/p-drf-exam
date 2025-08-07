@@ -26,12 +26,17 @@ class IsSeller(BasePermission):
 
 class EditCarPosterPermission(BasePermission):
     """
-    - Перегляд дозволений всім.
-    - Редагування/видалення дозволене лише власнику, менеджеру або адміну.
-    """
+        Перевірка прав доступу до оголошення (CarPosterModel):
+
+        - Перегляд дозволений всім.
+        - Редагування/видалення дозволене лише:
+            - власнику, якщо оголошення не є неактивним;
+            - менеджеру або адміну — завжди.
+        - Якщо користувач не має відповідних прав, він отримає пояснювальне повідомлення.
+        """
 
     def has_object_permission(self, request, view, obj):
-        # Перегляд дозволяємо всім (навіть неавторизованим, якщо інше не заборонено)
+        # Перегляд дозволяємо всім (у тому числі неавторизованим)
         if request.method in ('GET', 'HEAD', 'OPTIONS'):
             return True
 
@@ -41,9 +46,13 @@ class EditCarPosterPermission(BasePermission):
         if not user.is_authenticated:
             raise PermissionDenied("Неавторизовані користувачі не можуть змінювати дані.")
 
-        if user == obj.user and obj.status != 'inactive':
+        # Власник може редагувати лише, якщо оголошення не є неактивним
+        if user == obj.user:
+            if obj.status == 'inactive':
+                raise PermissionDenied("Ви не можете редагувати оголошення зі статусом 'неактивне'.")
             return True
 
+        # Менеджер або адміністратор мають повний доступ
         if user.is_staff:
             return True
 
@@ -51,6 +60,33 @@ class EditCarPosterPermission(BasePermission):
             return True
 
         raise PermissionDenied("У вас немає прав змінювати або видаляти це оголошення.")
+
+    # """
+    # - Перегляд дозволений всім.
+    # - Редагування/видалення дозволене лише власнику, менеджеру або адміну.
+    # """
+    #
+    # def has_object_permission(self, request, view, obj):
+    #     # Перегляд дозволяємо всім (навіть неавторизованим, якщо інше не заборонено)
+    #     if request.method in ('GET', 'HEAD', 'OPTIONS'):
+    #         return True
+    #
+    #     # Для всього іншого — перевірка прав
+    #     user = request.user
+    #
+    #     if not user.is_authenticated:
+    #         raise PermissionDenied("Неавторизовані користувачі не можуть змінювати дані.")
+    #
+    #     if user == obj.user and obj.status != 'inactive':
+    #         return True
+    #
+    #     if user.is_staff:
+    #         return True
+    #
+    #     if hasattr(user, 'role') and user.role in ['manager', 'admin']:
+    #         return True
+    #
+    #     raise PermissionDenied("У вас немає прав змінювати або видаляти це оголошення.")
 
 
 class IsOwnerOrManagerOrAdmin(BasePermission):
