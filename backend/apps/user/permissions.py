@@ -99,7 +99,7 @@ class IsOwnerOrManagerOrAdmin(BasePermission):
 
         if not user.is_authenticated:
             raise PermissionDenied("Неавторизовані користувачі не мають доступу.")
-        
+
         # Перевірка ролей або статусу
         if user.is_superuser or getattr(user, "role") in ("manager", "admin"):
             return True
@@ -109,6 +109,7 @@ class IsOwnerOrManagerOrAdmin(BasePermission):
             return True  # власник акаунта
 
         raise PermissionDenied("У вас немає прав доступу до цього користувача.")
+
 
 class HasPremiumAccessPermission(BasePermission):
     """
@@ -121,3 +122,12 @@ class HasPremiumAccessPermission(BasePermission):
         if has_premium_access(request.user, obj.user):
             return True
         raise PermissionDenied("Доступ дозволений лише преміум-продавцю, менеджеру або адміну.")
+
+
+class IsManagerOrAdmin(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user.is_authenticated and (
+                    request.user.is_staff or getattr(request.user, 'role', None) in ['manager', 'admin']
+            )
+        )

@@ -43,21 +43,25 @@ class CarListCreateView(ListAPIView):
     permission_classes = (AllowAny,)
     # permission_classes = (IsAuthenticated,)
 
+    # Виводить лише активні оголошення незалежно від того, чи користувач авторизований.
     def get_queryset(self):
-        user = self.request.user
+        return CarPosterModel.objects.filter(status='active')
 
-        # Якщо неавторизований — лише активні оголошення
-        if not user.is_authenticated:
-            return CarPosterModel.objects.filter(status='active')
-
-        # Менеджер або адміністратор бачать все
-        if user.is_staff or getattr(user, 'role') in ['manager', 'admin']:
-            return CarPosterModel.objects.all()
-
-        # Авторизований користувач бачить активні + свої оголошення
-        return CarPosterModel.objects.filter(
-            Q(status='active') | Q(user=user)
-        )
+    # def get_queryset(self):
+    #     user = self.request.user
+    #
+    #     # Якщо неавторизований — лише активні оголошення
+    #     if not user.is_authenticated:
+    #         return CarPosterModel.objects.filter(status='active')
+    #
+    #     # Менеджер або адміністратор бачать все
+    #     if user.is_staff or getattr(user, 'role') in ['manager', 'admin']:
+    #         return CarPosterModel.objects.all()
+    #
+    #     # Авторизований користувач бачить активні + свої оголошення
+    #     return CarPosterModel.objects.filter(
+    #         Q(status='active') | Q(user=user)
+    #     )
 
         # return CarPosterModel.objects.filter(
         #     status='active'
