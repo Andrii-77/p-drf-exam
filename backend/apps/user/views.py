@@ -4,14 +4,17 @@ from django.contrib.auth import get_user_model
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from core.pagination import PagePagination
 from core.services.banned_words_service import contains_bad_words
 
+from apps.car.filter import CarFilter
+from apps.car.models import CarPosterModel
 from apps.car.serializers import CarPosterSerializer
 from apps.user.permissions import IsOwnerOrManagerOrAdmin
 from apps.user.serializers import UserSerializer
@@ -172,46 +175,109 @@ class UserSellerToPremiumAccountTypeView(GenericAPIView):
         return Response(serializer.data, status.HTTP_200_OK)
 
 
-class UserAddCarPosterView(GenericAPIView):
-    queryset = UserModel.objects.all()
+class UserAddCarPosterView(generics.ListCreateAPIView):
+    serializer_class = CarPosterSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = PagePagination  # твоя кастомна пагінація
+    filterset_class = CarFilter
 
-    # def get_queryset(self):
-    #     user = self.get_object()
-    #     user_serializer = UserSerializer(user)
-    #     return Response(user_serializer.data, status=status.HTTP_200_OK)
-    # Треба доробити метод гет, для виводу юзера з його автомобілями.
+    def get_queryset(self):
+        user_id = self.kwargs.get('pk')  # або як ти називаєш параметр у URL
+        if self.request.user.id != int(user_id):
+            raise PermissionDenied("Ви не можете переглядати авто іншого користувача.")
+        # Фільтруємо машини конкретного користувача
+        return CarPosterModel.objects.filter(user_id=user_id)
 
-    def post(self, *args, **kwargs):
-        user = self.get_object()
-        data = self.request.data
+    def perform_create(self, serializer):
+        user_id = self.kwargs.get('pk')
+        if self.request.user.id != int(user_id):
+            raise PermissionDenied("Ви не можете створювати оголошення від імені іншого користувача.")
+
+        user = UserModel.objects.get(pk=user_id)
         if user.account_type == 'basic' and user.cars.count() >= 1:
             raise PermissionDenied("Користувач з базовим акаунтом може мати лише одне оголошення.")
-        if self.request.user != user:
-            raise PermissionDenied("Ви не можете створювати оголошення від імені іншого користувача.")
-        serializer = CarPosterSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        # serializer.save(user=user)
-        # user_serializer = UserSerializer(user)
-        # return Response(user_serializer.data, status.HTTP_201_CREATED)
+
         instance = serializer.save(user=user)
 
-        # Додаємо повідомлення в залежності від опису
+        # Перевірка опису на погані слова
+        if contains_bad_words(instance.description):
+            instance.status = 'draft'  # або як там статус чорновика називається
+            instance.save()
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        instance = CarPosterModel.objects.get(pk=response.data['id'])
         if contains_bad_words(instance.description):
             message = "Опис створеного оголошення містить нецензурну лексику. Оголошення збережено зі статусом 'чорновик'."
         else:
             message = "Оголошення успішно створене та активоване."
 
-        # user_serializer = UserSerializer(user)
-        # response_data = user_serializer.data
-        # response_data['message'] = message
-        # return Response(response_data, status=status.HTTP_201_CREATED)
-        # Тут повідомлення йде після опису юзері і його списку авто.
+        response.data['message'] = message
+        return response
 
-        car_data = CarPosterSerializer(instance).data
-        car_data['message'] = message
-        return Response(car_data, status=status.HTTP_201_CREATED)
-        # Тут виводиться тільки створене авто і в кінці йде повідомлення до цього оголошення.
+
+# class UserAddCarPosterView(GenericAPIView):
+#     queryset = UserModel.objects.all()
+#     permission_classes = [IsAuthenticated]
+#     pagination_class = PagePagination  # призначаємо кастомну пагінацію
+#
+#     def get(self, request, *args, **kwargs):
+#         user = self.get_object()
+#         if self.request.user != user:
+#             raise PermissionDenied("Ви не можете переглядати авто іншого користувача.")
+#
+#         cars = user.cars.all()
+#
+#         # застосовуємо пагінацію до queryset
+#         page = self.paginate_queryset(cars)
+#         if page is not None:
+#             serializer = CarPosterSerializer(page, many=True, context={'request': request})
+#             return self.get_paginated_response(serializer.data)
+#
+#         # якщо пагінація не застосовується, повертаємо все
+#         serializer = CarPosterSerializer(cars, many=True, context={'request': request})
+#         return Response(serializer.data, status=200)
+#
+#     # def get(self, request, *args, **kwargs):
+#     #     user = self.get_object()
+#     #     if self.request.user != user:
+#     #         raise PermissionDenied("Ви не можете переглядати авто іншого користувача.")
+#     #
+#     #     cars = user.cars.all()  # тут уже всі машини користувача
+#     #     serializer = CarPosterSerializer(cars, many=True, context={'request': request})
+#     #     return Response(serializer.data, status=status.HTTP_200_OK)
+#
+#
+#     def post(self, *args, **kwargs):
+#         user = self.get_object()
+#         data = self.request.data
+#         if user.account_type == 'basic' and user.cars.count() >= 1:
+#             raise PermissionDenied("Користувач з базовим акаунтом може мати лише одне оголошення.")
+#         if self.request.user != user:
+#             raise PermissionDenied("Ви не можете створювати оголошення від імені іншого користувача.")
+#         serializer = CarPosterSerializer(data=data)
+#         serializer.is_valid(raise_exception=True)
+#         # serializer.save(user=user)
+#         # user_serializer = UserSerializer(user)
+#         # return Response(user_serializer.data, status.HTTP_201_CREATED)
+#         instance = serializer.save(user=user)
+#
+#         # Додаємо повідомлення в залежності від опису
+#         if contains_bad_words(instance.description):
+#             message = "Опис створеного оголошення містить нецензурну лексику. Оголошення збережено зі статусом 'чорновик'."
+#         else:
+#             message = "Оголошення успішно створене та активоване."
+#
+#         # user_serializer = UserSerializer(user)
+#         # response_data = user_serializer.data
+#         # response_data['message'] = message
+#         # return Response(response_data, status=status.HTTP_201_CREATED)
+#         # Тут повідомлення йде після опису юзері і його списку авто.
+#
+#         car_data = CarPosterSerializer(instance).data
+#         car_data['message'] = message
+#         return Response(car_data, status=status.HTTP_201_CREATED)
+#         # Тут виводиться тільки створене авто і в кінці йде повідомлення до цього оголошення.
 
 
 class SendEmailTestView(GenericAPIView):

@@ -1,6 +1,7 @@
 FROM python:3.12-alpine
 
-MAINTAINER Some Dev
+#MAINTAINER Some Dev  # це по старій інструкції
+LABEL maintainer="Some Dev"
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

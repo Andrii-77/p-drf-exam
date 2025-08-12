@@ -1,6 +1,6 @@
 from django.db.models import Q
 
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -35,7 +35,7 @@ class CarModelRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = CarModelModel.objects.all()
 
 
-class CarListCreateView(ListAPIView):
+class CarListCreateView(generics.ListAPIView):
     #тепер тут створювати cars ми не можемо
     serializer_class = CarPosterSerializer
     # queryset = CarPosterModel.objects.all()
@@ -44,19 +44,26 @@ class CarListCreateView(ListAPIView):
     # permission_classes = (IsAuthenticated,)
 
     # Виводить лише активні оголошення незалежно від того, чи користувач авторизований.
+    # def get_queryset(self):
+    #     return CarPosterModel.objects.filter(status='active')
+
     def get_queryset(self):
+        user = self.request.user
+
+        # Менеджер або адміністратор бачать все
+        if user.is_authenticated and (
+                user.is_staff or getattr(user, 'role', None) in ['manager', 'admin']
+        ):
+            return CarPosterModel.objects.all()
+
+        # Для всіх інших — лише активні
         return CarPosterModel.objects.filter(status='active')
 
-    # def get_queryset(self):
-    #     user = self.request.user
     #
     #     # Якщо неавторизований — лише активні оголошення
     #     if not user.is_authenticated:
     #         return CarPosterModel.objects.filter(status='active')
     #
-    #     # Менеджер або адміністратор бачать все
-    #     if user.is_staff or getattr(user, 'role') in ['manager', 'admin']:
-    #         return CarPosterModel.objects.all()
     #
     #     # Авторизований користувач бачить активні + свої оголошення
     #     return CarPosterModel.objects.filter(
