@@ -1,8 +1,20 @@
-import ReactDOM from 'react-dom/client';
-import {RouterProvider} from "react-router-dom";
-import {router} from "./router";
+// import ReactDOM from 'react-dom/client';
+// import {RouterProvider} from "react-router-dom";
+// import {router} from "./router";
+//
+// const root = ReactDOM.createRoot(document.getElementById('root'));
+// root.render(
+//     <RouterProvider router={router}/>
+// );
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+import ReactDOM from "react-dom/client";
+import { RouterProvider } from "react-router-dom";
+import { router } from "./router";
+import { AuthProvider } from "./context/AuthContext";
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-    <RouterProvider router={router}/>
+  <AuthProvider>
+    <RouterProvider router={router} />
+  </AuthProvider>
 );
