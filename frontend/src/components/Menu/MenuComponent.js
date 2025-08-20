@@ -5,27 +5,28 @@ import {useAuth} from "../../context/AuthContext";
 // Конфігурація меню для різних ролей
 const menuConfig = {
   guest: [
-    { label: "Всі авто", path: "/" },
+    { label: "Домашня сторінка", path: "/" },
+    { label: "Всі авто", path: "/cars" },
     { label: "Логін", path: "/login" },
     { label: "Реєстрація", path: "/register" },
   ],
   buyer: [
-    { label: "Всі авто", path: "/" },
+    { label: "Всі авто", path: "/cars" },
     { label: "Вийти", action: "logout" },
   ],
   seller: [
-    { label: "Всі авто", path: "/" },
+    { label: "Всі авто", path: "/cars" },
     { label: "Створити оголошення", path: "/create-car" },
     { label: "Мої авто", path: "/my-cars" },
     { label: "Вийти", action: "logout" },
   ],
   manager: [
-    { label: "Всі авто", path: "/" },
+    { label: "Всі авто", path: "/cars" },
     { label: "Дашборд менеджера", path: "/manager" },
     { label: "Вийти", action: "logout" },
   ],
   admin: [
-    { label: "Всі авто", path: "/" },
+    { label: "Всі авто", path: "/cars" },
     { label: "Дашборд адміністратора", path: "/admin" },
     { label: "Вийти", action: "logout" },
   ],

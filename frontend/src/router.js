@@ -36,6 +36,7 @@ import {RegistrationPage} from "./pages/RegistrationPage";
 import {UserCarPostersPage} from "./pages/UserCarPostersPage";
 import {ProtectedRoute} from "./components/ProtectedRouteComponent/ProtectedRoute";
 import {MainLayout} from "./layouts/MainLayout/MainLayout";
+import {WelcomePage} from "./pages/WelcomePage";
 
 const router = createBrowserRouter([
     {
@@ -43,7 +44,8 @@ const router = createBrowserRouter([
         element: <MainLayout/>,
         errorElement: <NotFoundPage/>,
         children: [
-            {index: true, element: <CarPostersPage/>},
+            {index: true, element: <WelcomePage/>},
+            {path: "cars", element: <CarPostersPage/>},
             {path: "login", element: <LoginPage/>},
             {path: "register", element: <RegistrationPage/>},
 
