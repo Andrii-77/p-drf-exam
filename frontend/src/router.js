@@ -37,6 +37,7 @@ import {UserCarPostersPage} from "./pages/UserCarPostersPage";
 import {ProtectedRoute} from "./components/ProtectedRouteComponent/ProtectedRoute";
 import {MainLayout} from "./layouts/MainLayout/MainLayout";
 import {WelcomePage} from "./pages/WelcomePage";
+import {ProfilePage} from "./pages/ProfilePage";
 
 const router = createBrowserRouter([
     {
@@ -48,6 +49,8 @@ const router = createBrowserRouter([
             {path: "cars", element: <CarPostersPage/>},
             {path: "login", element: <LoginPage/>},
             {path: "register", element: <RegistrationPage/>},
+            {path: "profile", element: <ProfilePage/>,},
+
 
             {
                 path: "create-car",

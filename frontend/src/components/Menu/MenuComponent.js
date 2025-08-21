@@ -11,21 +11,25 @@ const menuConfig = {
     { label: "Реєстрація", path: "/register" },
   ],
   buyer: [
+    { label: "Профіль", path: "/profile" },
     { label: "Всі авто", path: "/cars" },
     { label: "Вийти", action: "logout" },
   ],
   seller: [
+    { label: "Профіль", path: "/profile" },
     { label: "Всі авто", path: "/cars" },
     { label: "Створити оголошення", path: "/create-car" },
     { label: "Мої авто", path: "/my-cars" },
     { label: "Вийти", action: "logout" },
   ],
   manager: [
+    { label: "Профіль", path: "/profile" },
     { label: "Всі авто", path: "/cars" },
     { label: "Дашборд менеджера", path: "/manager" },
     { label: "Вийти", action: "logout" },
   ],
   admin: [
+    { label: "Профіль", path: "/profile" },
     { label: "Всі авто", path: "/cars" },
     { label: "Дашборд адміністратора", path: "/admin" },
     { label: "Вийти", action: "logout" },
