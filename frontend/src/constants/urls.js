@@ -1,18 +1,19 @@
-const baseURL = '/api'
+const baseURL = '/api';
 
-const auth = '/auth'
-const cars = '/cars'
-const users = '/users'
+const auth = '/auth';
+const cars = '/cars';
+const users = '/users';
 
 const urls = {
-    auth: {
-        login: auth,
-    },
-    cars,
-    users
-}
+  auth: {
+    login: auth,          // POST для логіну
+    me: `${users}/me`,     // GET для поточного користувача
+  },
+  cars,                  // інші ендпоінти
+  users
+};
 
 export {
-    baseURL,
-    urls
-}
+  baseURL,
+  urls
+};

@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     BlockUserView,
+    CurrentUserView,
     SendEmailTestView,
     UnBlockUserView,
     UserAddCarPosterView,
@@ -32,4 +33,5 @@ urlpatterns = [
     path('/<int:pk>/to_buyer_role', UserToBuyerRoleView.as_view(), name='user_to_buyer_role'),
     path('/<int:pk>/to_basic_account_type', UserSellerToBasicAccountTypeView.as_view(), name='user_seller_to_basic_account_type'),
     path('/<int:pk>/to_premium_account_type', UserSellerToPremiumAccountTypeView.as_view(), name='user_seller_to_premium_account_type'),
+    path('/me', CurrentUserView.as_view(), name='user-me')
 ]

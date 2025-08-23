@@ -9,6 +9,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from core.pagination import PagePagination
 from core.services.banned_words_service import contains_bad_words
@@ -303,3 +304,11 @@ class UserDetailView(RetrieveUpdateDestroyAPIView):
         if self.request.method == 'GET':
             return [AllowAny()]  # будь-хто може побачити юзера
         return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]  # редагувати/видалити — тільки з правами
+
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        serializer = UserSerializer(user, context={'request': request})
+        return Response(serializer.data, status=200)
