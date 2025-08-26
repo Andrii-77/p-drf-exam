@@ -23,34 +23,68 @@ const RegistrationPage = () => {
   };
 
   return (
-    <section style={{ maxWidth: 480 }}>
-      <h1>Реєстрація</h1>
-      <form onSubmit={handleSubmit} style={{ display: "grid", gap: 12 }}>
-        <label>
-          Email
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </label>
-        <label>
-          Пароль
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </label>
-        <label>
-          Роль
-          <select value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="buyer">Покупець</option>
-            <option value="seller">Продавець</option>
-          </select>
-        </label>
-        {error && <p style={{ color: "crimson" }}>{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? "Створення..." : "Зареєструватися"}
-        </button>
-      </form>
-      <p style={{ marginTop: 12 }}>
-        Вже маєте акаунт? <Link to="/login">Увійдіть</Link>
-      </p>
-    </section>
-  );
-}
+    <div className="flex justify-center items-center min-h-[80vh]">
+      <div className="bg-gray-900 p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h1 className="text-2xl font-bold text-gray-100 mb-6 text-center">
+          Реєстрація
+        </h1>
+        <form
+          onSubmit={handleSubmit}
+          className="grid gap-4"
+        >
+          <label className="flex flex-col text-gray-100">
+            Email
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="mt-1 px-3 py-2 rounded bg-gray-800 text-gray-100 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </label>
+          <label className="flex flex-col text-gray-100">
+            Пароль
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="mt-1 px-3 py-2 rounded bg-gray-800 text-gray-100 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </label>
+          <label className="flex flex-col text-gray-100">
+            Роль
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="mt-1 px-3 py-2 rounded bg-gray-800 text-gray-100 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="buyer">Покупець</option>
+              <option value="seller">Продавець</option>
+            </select>
+          </label>
 
-export {RegistrationPage}
+          {error && (
+            <p className="text-red-500 text-sm text-center">{error}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded shadow transition-colors disabled:opacity-50"
+          >
+            {loading ? "Створення..." : "Зареєструватися"}
+          </button>
+        </form>
+        <p className="text-gray-300 mt-4 text-center">
+          Вже маєте акаунт?{" "}
+          <Link to="/login" className="text-blue-400 hover:underline">
+            Увійдіть
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export { RegistrationPage };
