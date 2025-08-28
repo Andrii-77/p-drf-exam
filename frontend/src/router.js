@@ -1,11 +1,11 @@
 // import { createBrowserRouter, Navigate } from "react-router-dom";
-// import {MainLayout} from "./layouts/MainLayout/MainLayout";
+// import {main-layout} from "./layouts/main-layout/main-layout";
 // import {LoginPage} from "./pages/LoginPage";
 // import {CarPostersPage} from "./pages/CarPostersPage";
 //
 // const router = createBrowserRouter([
 //     {
-//         path:'', element:<MainLayout/>, children:[
+//         path:'', element:<main-layout/>, children:[
 //             {
 //                 index:true, element:<Navigate to={'login'}/>
 //             },
@@ -34,8 +34,8 @@ import {AdminDashboardPage} from "./pages/AdminDashboardPage";
 import {CreateCarPosterPage} from "./pages/CreateCarPosterPage";
 import {RegistrationPage} from "./pages/RegistrationPage";
 import {UserCarPostersPage} from "./pages/UserCarPostersPage";
-import {ProtectedRoute} from "./components/ProtectedRouteComponent/ProtectedRoute";
-import {MainLayout} from "./layouts/MainLayout/MainLayout";
+import {ProtectedRouteComponent} from "./components/protected-route-component/ProtectedRouteComponent";
+import {MainLayout} from "./layouts/main-layout/MainLayout";
 import {WelcomePage} from "./pages/WelcomePage";
 import {ProfilePage} from "./pages/ProfilePage";
 
@@ -55,33 +55,33 @@ const router = createBrowserRouter([
             {
                 path: "create-car",
                 element: (
-                    <ProtectedRoute role="seller">
+                    <ProtectedRouteComponent role="seller">
                         <CreateCarPosterPage/>
-                    </ProtectedRoute>
+                    </ProtectedRouteComponent>
                 ),
             },
             {
                 path: "my-cars",
                 element: (
-                    <ProtectedRoute role="seller">
+                    <ProtectedRouteComponent role="seller">
                         <UserCarPostersPage/>
-                    </ProtectedRoute>
+                    </ProtectedRouteComponent>
                 ),
             },
             {
                 path: "manager",
                 element: (
-                    <ProtectedRoute role="manager">
+                    <ProtectedRouteComponent role="manager">
                         <ManagerDashboardPage/>
-                    </ProtectedRoute>
+                    </ProtectedRouteComponent>
                 ),
             },
             {
                 path: "admin",
                 element: (
-                    <ProtectedRoute role="admin">
+                    <ProtectedRouteComponent role="admin">
                         <AdminDashboardPage/>
-                    </ProtectedRoute>
+                    </ProtectedRouteComponent>
                 ),
             },
         ],

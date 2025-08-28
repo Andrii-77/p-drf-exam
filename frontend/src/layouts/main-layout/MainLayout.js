@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import { Menu } from "../../components/Menu/MenuComponent";
+import { Menu } from "../../components/menu/MenuComponent";
 
 const MainLayout = () => {
   return (
@@ -27,25 +27,25 @@ export { MainLayout };
 
 // import { Outlet } from "react-router-dom";
 //
-// const MainLayout = () => {
+// const main-layout = () => {
 //     return (
 //         <div>
-//             <div>MainLayout</div>
+//             <div>main-layout</div>
 //             <Outlet/>
 //         </div>
 //     );
 // };
 //
-// export {MainLayout};
+// export {main-layout};
 
 // import React from "react";
 // import {Outlet} from "react-router-dom";
-// import {Menu} from "../../components/Menu/MenuComponent";
+// import {menu} from "../../components/menu/MenuComponent";
 //
-// const MainLayout = () => {
+// const main-layout = () => {
 //     return (
 //         <div style={{minHeight: "100vh", display: "flex", flexDirection: "column"}}>
-//             <Menu/>
+//             <menu/>
 //             <main style={{flex: 1, maxWidth: 1200, margin: "0 auto", padding: "16px"}}>
 //                 <Outlet/>
 //             </main>
@@ -56,4 +56,4 @@ export { MainLayout };
 //     );
 // }
 //
-// export {MainLayout}
+// export {main-layout}

@@ -3,7 +3,7 @@ import {Navigate, useLocation} from "react-router-dom";
 import {useAuth} from "../../context/AuthContext";
 
 
-const ProtectedRoute = ({children, role}) => {
+const ProtectedRouteComponent = ({children, role}) => {
     const {isAuthenticated, user} = useAuth();
     const location = useLocation();
 
@@ -18,4 +18,4 @@ const ProtectedRoute = ({children, role}) => {
     return children;
 }
 
-export {ProtectedRoute}
+export {ProtectedRouteComponent}

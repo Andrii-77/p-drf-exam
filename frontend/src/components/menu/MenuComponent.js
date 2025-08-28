@@ -108,7 +108,7 @@ export { Menu };
 //   ],
 // };
 //
-// const Menu = () => {
+// const menu = () => {
 //   const { user, logout } = useAuth();
 //
 //   // Якщо користувач не авторизований → guest
@@ -140,4 +140,4 @@ export { Menu };
 //   );
 // }
 //
-// export {Menu}
+// export {menu}
