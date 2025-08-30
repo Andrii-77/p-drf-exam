@@ -1,17 +1,64 @@
 import axios from "axios";
 import { baseURL } from "../constants/urls";
+import { authService } from "./authService";
 
 const apiService = axios.create({ baseURL });
 
-apiService.interceptors.request.use(req => {
-    const token = localStorage.getItem('access');
-    if (token) {
-        req.headers.Authorization = `Bearer ${token}`;
-    }
-    return req;
+// 🔹 Інтерцептор для access токена
+apiService.interceptors.request.use((req) => {
+  const token = localStorage.getItem("access");
+  if (token) {
+    req.headers.Authorization = `Bearer ${token}`;
+  }
+  return req;
 });
 
+// 🔹 Інтерцептор відповіді для автоматичного refresh
+apiService.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const { access } = await authService.refreshToken();
+
+        apiService.defaults.headers.common["Authorization"] = `Bearer ${access}`;
+        originalRequest.headers["Authorization"] = `Bearer ${access}`;
+
+        return apiService(originalRequest); // 🔄 повтор запиту з новим токеном
+      } catch (refreshError) {
+        console.error("❌ Refresh token помилка:", refreshError);
+        authService.logout();
+        window.location.href = "/login"; // редірект на логін
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export { apiService };
+
+
+
+
+// import axios from "axios";
+// import { baseURL } from "../constants/urls";
+//
+// const apiService = axios.create({ baseURL });
+//
+// apiService.interceptors.request.use(req => {
+//     const token = localStorage.getItem('access');
+//     if (token) {
+//         req.headers.Authorization = `Bearer ${token}`;
+//     }
+//     return req;
+// });
+//
+// export { apiService };
 
 
 
