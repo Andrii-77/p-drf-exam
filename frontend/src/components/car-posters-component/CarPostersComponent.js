@@ -25,6 +25,7 @@ const CarPostersComponent = ({ user }) => {
     }
 
     carService.getAllCars(params).then((res) => {
+      console.log("Cars data from backend:", res.data.data); // 👈 Додай
       setCars(res.data.data);
       setTotalPages(res.data.total_pages);
     });

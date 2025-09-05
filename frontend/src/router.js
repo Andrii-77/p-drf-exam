@@ -38,6 +38,7 @@ import {ProtectedRouteComponent} from "./components/protected-route-component/Pr
 import {MainLayout} from "./layouts/main-layout/MainLayout";
 import {WelcomePage} from "./pages/WelcomePage";
 import {ProfilePage} from "./pages/ProfilePage";
+import {CarDetailsPage} from "./pages/CarDetailsPage";
 
 const router = createBrowserRouter([
     {
@@ -49,9 +50,8 @@ const router = createBrowserRouter([
             {path: "cars", element: <CarPostersPage/>},
             {path: "login", element: <LoginPage/>},
             {path: "register", element: <RegistrationPage/>},
-            {path: "profile", element: <ProfilePage/>,},
-
-
+            {path: "profile", element: <ProfilePage/>},
+            {path: "cars/:id", element: <CarDetailsPage/>},
             {
                 path: "create-car",
                 element: (

@@ -28,10 +28,10 @@ class CarModelSerializer(serializers.ModelSerializer):
 
 
 class CarPosterSerializer(serializers.ModelSerializer):
-    # brand = CarBrandSerializer(read_only=True)
-    # model = CarModelSerializer(read_only=True)
-    brand = CarBrandSerializer
-    model = CarModelSerializer
+    brand = CarBrandSerializer(read_only=True)
+    model = CarModelSerializer(read_only=True)
+    # brand = CarBrandSerializer
+    # model = CarModelSerializer
     region_average_price = serializers.SerializerMethodField()
     country_average_price = serializers.SerializerMethodField()
     total_views = serializers.SerializerMethodField()
