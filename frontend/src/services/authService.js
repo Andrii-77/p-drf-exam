@@ -2,36 +2,30 @@ import { apiService } from "./apiService";
 import { urls } from "../constants/urls";
 
 const authService = {
-  async login(user) {
-    const response = await apiService.post(urls.auth.login, user);
+  async login(credentials) {
+    const response = await apiService.post(urls.auth.login, credentials);
 
     const { access, refresh } = response.data;
-    if (!access || !refresh) throw new Error("Токени не отримано");
-
-    localStorage.setItem("access", access);
-    localStorage.setItem("refresh", refresh);
-
-    return response.data; // { access, refresh }
-  },
-
-  async refreshToken() {
-    const refresh = localStorage.getItem("refresh");
-    if (!refresh) throw new Error("Refresh токен відсутній");
-
-    const response = await apiService.post(urls.auth.refresh, { refresh });
-
-    // Якщо бекенд повертає і refresh — оновимо обидва
-    const { access, refresh: newRefresh } = response.data;
-
-    if (access) {
-      localStorage.setItem("access", access);
-      if (newRefresh) {
-        localStorage.setItem("refresh", newRefresh);
-      }
-      return { access, refresh: newRefresh || refresh };
+    if (!access || !refresh) {
+      throw new Error("Токени не отримано");
     }
 
-    throw new Error("Не вдалося оновити токен");
+    return response.data; // { access, refresh, ... }
+  },
+
+  async refreshToken(refresh) {
+    if (!refresh) {
+      throw new Error("Refresh токен відсутній");
+    }
+
+    const response = await apiService.post(urls.auth.refresh, { refresh });
+    const { access, refresh: newRefresh } = response.data;
+
+    if (!access) {
+      throw new Error("Не вдалося оновити токен");
+    }
+
+    return { access, refresh: newRefresh || refresh };
   },
 
   async getMe() {
@@ -40,17 +34,69 @@ const authService = {
   },
 
   logout() {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    localStorage.removeItem("user"); // 🔹 Якщо ви зберігали юзера
+    localStorage.removeItem("tokens");
+    localStorage.removeItem("user");
   },
-
-  isAuthenticated() {
-    return !!localStorage.getItem("access") && !!localStorage.getItem("refresh");
-  }
 };
 
 export { authService };
+
+
+
+
+// import { apiService } from "./apiService";
+// import { urls } from "../constants/urls";
+//
+// const authService = {
+//   async login(user) {
+//     const response = await apiService.post(urls.auth.login, user);
+//
+//     const { access, refresh } = response.data;
+//     if (!access || !refresh) throw new Error("Токени не отримано");
+//
+//     localStorage.setItem("access", access);
+//     localStorage.setItem("refresh", refresh);
+//
+//     return response.data; // { access, refresh }
+//   },
+//
+//   async refreshToken() {
+//     const refresh = localStorage.getItem("refresh");
+//     if (!refresh) throw new Error("Refresh токен відсутній");
+//
+//     const response = await apiService.post(urls.auth.refresh, { refresh });
+//
+//     // Якщо бекенд повертає і refresh — оновимо обидва
+//     const { access, refresh: newRefresh } = response.data;
+//
+//     if (access) {
+//       localStorage.setItem("access", access);
+//       if (newRefresh) {
+//         localStorage.setItem("refresh", newRefresh);
+//       }
+//       return { access, refresh: newRefresh || refresh };
+//     }
+//
+//     throw new Error("Не вдалося оновити токен");
+//   },
+//
+//   async getMe() {
+//     const response = await apiService.get(urls.auth.me);
+//     return response.data;
+//   },
+//
+//   logout() {
+//     localStorage.removeItem("access");
+//     localStorage.removeItem("refresh");
+//     localStorage.removeItem("user"); // 🔹 Якщо ви зберігали юзера
+//   },
+//
+//   isAuthenticated() {
+//     return !!localStorage.getItem("access") && !!localStorage.getItem("refresh");
+//   }
+// };
+//
+// export { authService };
 
 
 
