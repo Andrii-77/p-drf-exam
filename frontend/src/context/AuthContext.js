@@ -4,70 +4,144 @@ import { authService } from "../services/authService";
 const AuthContext = createContext(undefined);
 
 const AuthProvider = ({ children }) => {
-const [user, setUser] = useState(null);
-const [tokens, setTokens] = useState(null);
+  const [user, setUser] = useState(null);
+  const [tokens, setTokens] = useState(null);
 
-// 🔹 Завантаження стану з localStorage при старті
-useEffect(() => {
-const savedTokens = localStorage.getItem("tokens");
-const savedUser = localStorage.getItem("user");
-if (savedTokens) {
-setTokens(JSON.parse(savedTokens));
-}
-if (savedUser) {
-setUser(JSON.parse(savedUser));
-}
-}, []);
+  // 🔹 Завантаження стану з localStorage при старті
+  useEffect(() => {
+    const savedTokens = localStorage.getItem("tokens");
+    const savedUser = localStorage.getItem("user");
+    if (savedTokens) {
+      setTokens(JSON.parse(savedTokens));
+    }
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
 
-// 🔹 Вхід у систему (після login API)
-const login = (userData, tokenData) => {
-setUser(userData);
-setTokens(tokenData);
-localStorage.setItem("user", JSON.stringify(userData));
-localStorage.setItem("tokens", JSON.stringify(tokenData));
+  // 🔹 Вхід у систему (після login API)
+  const login = (userData, tokenData) => {
+    setUser(userData);
+    setTokens(tokenData);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("tokens", JSON.stringify(tokenData));
+  };
+
+  // 🔹 Оновлення тільки токенів (наприклад, після refresh)
+  const updateTokens = (newTokens) => {
+    setTokens(newTokens);
+    localStorage.setItem("tokens", JSON.stringify(newTokens));
+  };
+
+  // 🔹 Вихід із системи
+  const logout = () => {
+    setUser(null);
+    setTokens(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("tokens");
+    authService.logout();
+  };
+
+  const value = useMemo(
+    () => ({
+      user,
+      tokens,
+      isAuthenticated: !!tokens,
+      login,
+      updateTokens,
+      logout,
+    }),
+    [user, tokens]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-// 🔹 Оновлення тільки токенів (наприклад, після refresh)
-const updateTokens = (newTokens) => {
-setTokens(newTokens);
-localStorage.setItem("tokens", JSON.stringify(newTokens));
-};
-
-// 🔹 Вихід із системи
-const logout = () => {
-setUser(null);
-setTokens(null);
-localStorage.removeItem("user");
-localStorage.removeItem("tokens");
-authService.logout();
-};
-
-const value = useMemo(
-() => ({
-user,
-tokens,
-isAuthenticated: !!tokens,
-login,
-updateTokens,
-logout,
-}),
-[user, tokens]
-);
-
-return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export { AuthProvider };
 
 const useAuth = () => {
-const context = useContext(AuthContext);
-if (!context) {
-throw new Error("useAuth must be used within <AuthProvider>");
-}
-return context;
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within <AuthProvider>");
+  }
+  return context;
 };
 
-export { useAuth };
+// ✅ Три експорти: і контекст, і провайдер, і хук
+export { AuthContext, AuthProvider, useAuth };
+
+
+
+
+// Це був робочий варіант до останніх змін!!!:
+// import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+// import { authService } from "../services/authService";
+//
+// const AuthContext = createContext(undefined);
+//
+// const AuthProvider = ({ children }) => {
+// const [user, setUser] = useState(null);
+// const [tokens, setTokens] = useState(null);
+//
+// // 🔹 Завантаження стану з localStorage при старті
+// useEffect(() => {
+// const savedTokens = localStorage.getItem("tokens");
+// const savedUser = localStorage.getItem("user");
+// if (savedTokens) {
+// setTokens(JSON.parse(savedTokens));
+// }
+// if (savedUser) {
+// setUser(JSON.parse(savedUser));
+// }
+// }, []);
+//
+// // 🔹 Вхід у систему (після login API)
+// const login = (userData, tokenData) => {
+// setUser(userData);
+// setTokens(tokenData);
+// localStorage.setItem("user", JSON.stringify(userData));
+// localStorage.setItem("tokens", JSON.stringify(tokenData));
+// };
+//
+// // 🔹 Оновлення тільки токенів (наприклад, після refresh)
+// const updateTokens = (newTokens) => {
+// setTokens(newTokens);
+// localStorage.setItem("tokens", JSON.stringify(newTokens));
+// };
+//
+// // 🔹 Вихід із системи
+// const logout = () => {
+// setUser(null);
+// setTokens(null);
+// localStorage.removeItem("user");
+// localStorage.removeItem("tokens");
+// authService.logout();
+// };
+//
+// const value = useMemo(
+// () => ({
+// user,
+// tokens,
+// isAuthenticated: !!tokens,
+// login,
+// updateTokens,
+// logout,
+// }),
+// [user, tokens]
+// );
+//
+// return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+// };
+//
+// export { AuthProvider };
+//
+// const useAuth = () => {
+// const context = useContext(AuthContext);
+// if (!context) {
+// throw new Error("useAuth must be used within <AuthProvider>");
+// }
+// return context;
+// };
+//
+// export { useAuth };
 
 
 
