@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {useSearchParams} from "react-router-dom";
 
-import {carService} from "../../services/carsService";
+import {carService} from "../../services/carService";
 import {PaginationComponent} from "../pagination-component/PaginationComponent";
 import {CarPosterComponent} from "../car-poster-component/CarPosterComponent";
 
