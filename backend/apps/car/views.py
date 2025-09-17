@@ -6,31 +6,37 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated, I
 from rest_framework.response import Response
 
 from core.services.banned_words_service import contains_bad_words
+from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.car.filter import CarFilter
 from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
 from apps.car.serializers import BannedWordsSerializer, CarBrandSerializer, CarModelSerializer, CarPosterSerializer
 from apps.statistic.models import CarViewModel
 from apps.statistic.services import register_car_view
+from apps.user.mixins import ReadOnlyOrManagerAdminMixin
 from apps.user.permissions import EditCarPosterPermission
 
 
-class CarBrandListCreateView(ListCreateAPIView):
+class CarBrandListCreateView(ReadOnlyOrManagerAdminMixin, ListCreateAPIView):
     serializer_class = CarBrandSerializer
     queryset = CarBrandModel.objects.all()
-    filterset_class = CarFilter
+    # filterset_class = CarFilter
+    pagination_class = None  # 🔑 вимикає пагінацію
 
-class CarBrandRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
+class CarBrandRetrieveUpdateDestroyView(ReadOnlyOrManagerAdminMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = CarBrandSerializer
     queryset = CarBrandModel.objects.all()
 
 
-class CarModelListCreateView(ListCreateAPIView):
+class CarModelListCreateView(ReadOnlyOrManagerAdminMixin, ListCreateAPIView):
     serializer_class = CarModelSerializer
     queryset = CarModelModel.objects.all()
-    filterset_class = CarFilter
+    # filterset_class = CarFilter
+    pagination_class = None  # 🔑 вимикає пагінацію
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["brand"]
 
-class CarModelRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
+class CarModelRetrieveUpdateDestroyView(ReadOnlyOrManagerAdminMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = CarModelSerializer
     queryset = CarModelModel.objects.all()
 
