@@ -28,6 +28,15 @@ const CreateCarPosterPage = () => {
         carService
             .getBrands()
             .then((res) => setBrands(res.data || []))
+            // .then((res) => {
+            //     console.log("=== 📦 API ВІДПОВІДЬ /cars/brands ===");
+            //     console.log("res.data:", res.data);
+            //     console.log("Тип res.data:", typeof res.data);
+            //     if (Array.isArray(res.data)) {
+            //         console.log("Перший елемент:", res.data[0]);
+            //     }
+            //     setBrands(res.data || []);
+            // })
             .catch((err) => console.error("❌ Error fetching brands:", err));
     }, []);
 
@@ -40,25 +49,19 @@ const CreateCarPosterPage = () => {
         if (brandId) {
             carService
                 .getModels({brand: brandId})
-                .then((res) => {
-                    console.log("=== 📦 API ВІДПОВІДЬ /cars/models ===");
-                    console.log("Повністю res:", res);
-                    console.log("res.data:", res.data);
-                    console.log("typeof res.data:", typeof res.data);
-                    console.log("Ключі res.data:", Object.keys(res.data));
-                    console.log("Масив моделей (якщо є):", res.data.data || res.data);
-
-                    setModels(res.data.data || res.data || []);
-                })
+                .then((res) => setModels(res.data || []))
+                // .then((res) => {
+                //     console.log("=== 📦 API ВІДПОВІДЬ /cars/models ===");
+                //     console.log("Повністю res:", res);
+                //     console.log("res.data:", res.data);
+                //     console.log("typeof res.data:", typeof res.data);
+                //     console.log("Ключі res.data:", Object.keys(res.data));
+                //     console.log("Масив моделей (якщо є):", res.data.data || res.data);
+                //
+                //     setModels(res.data.data || res.data || []);
+                // })
                 .catch((err) => console.error("❌ Error fetching models:", err));
         }
-
-        // if (brandId) {
-        //   carService
-        //     .getModels({ brand: brandId })
-        //     .then((res) => setModels(res.data || []))
-        //     .catch((err) => console.error("❌ Error fetching models:", err));
-        // }
     };
 
     // ✅ сабміт оголошення
@@ -129,7 +132,7 @@ const CreateCarPosterPage = () => {
                             // onChange={(e) => handleBrandChange(e.target.value)}
                             onChange={(e) => {
                                 const brandId = e.target.value;
-                                console.log("👉 brandId у handleBrandChange:", brandId, typeof brandId);
+                                // console.log("👉 brandId у handleBrandChange:", brandId, typeof brandId);
                                 handleBrandChange(brandId);
                             }}
                             disabled={showNewBrand}

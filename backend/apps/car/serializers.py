@@ -17,13 +17,13 @@ logger = logging.getLogger(__name__)
 class CarBrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarBrandModel
-        fields = ('brand',)
+        fields = ("id", 'brand',)
 
 
 class CarModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarModelModel
-        fields = ('model',)
+        fields = ("id", "brand", "model")
 
 
 class CarPosterSerializer(serializers.ModelSerializer):
