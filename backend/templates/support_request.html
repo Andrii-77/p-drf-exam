@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <h2 style="color: #2c3e50;">🚗 Нова заявка про відсутній {{ type_display|lower }}</h2>
+
+    <p><strong>Тип заявки:</strong> {{ type_display }}</p>
+
+    {% if car_brand_name %}
+        <p><strong>Бренд:</strong> {{ car_brand_name }}</p>
+    {% endif %}
+
+    {% if car_model_name %}
+        <p><strong>Модель:</strong> {{ car_model_name }}</p>
+    {% endif %}
+
+    <p><strong>Текст заявки:</strong> {{ text }}</p>
+
+    {% if user_email %}
+        <p><strong>Відправник:</strong> {{ user_email }}</p>
+    {% else %}
+        <p><strong>Відправник:</strong> Анонімний користувач</p>
+    {% endif %}
+
+    <hr>
+    <small style="color: gray;">Дата створення: {{ created_at }}</small>
+{% endblock %}
