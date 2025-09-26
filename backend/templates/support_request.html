@@ -1,24 +1,24 @@
 {% extends 'base.html' %}
 
 {% block body %}
-    <h2 style="color: #2c3e50;">🚗 Нова заявка про відсутній {{ type_display|lower }}</h2>
+    <h2 style="color: #2c3e50;">🚗 Нова заявка про відсутній {{ type|lower }}</h2>
 
-    <p><strong>Тип заявки:</strong> {{ type_display }}</p>
+    <p><strong>Тип заявки:</strong> {{ type }}</p>
 
-    {% if car_brand_name %}
-        <p><strong>Бренд:</strong> {{ car_brand_name }}</p>
-    {% endif %}
-
-    {% if car_model_name %}
-        <p><strong>Модель:</strong> {{ car_model_name }}</p>
+    {% if brand %}
+        <p><strong>Бренд:</strong> {{ brand }}</p>
     {% endif %}
 
     <p><strong>Текст заявки:</strong> {{ text }}</p>
 
-    {% if user_email %}
-        <p><strong>Відправник:</strong> {{ user_email }}</p>
+    <hr>
+    <h3>👤 Інформація про відправника</h3>
+    {% if user %}
+        <p><strong>E-mail:</strong> {{ user_email }}</p>
+        <p><strong>Ім'я:</strong> {{ user_name }}</p>
+        <p><strong>Прізвище:</strong> {{ user_surname }}</p>
     {% else %}
-        <p><strong>Відправник:</strong> Анонімний користувач</p>
+        <p><strong>Користувач:</strong> Анонімний</p>
     {% endif %}
 
     <hr>

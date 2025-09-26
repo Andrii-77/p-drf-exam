@@ -17,16 +17,8 @@ class SupportRequestModel(BaseModel):
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     text = models.CharField(max_length=255)  # назва бренду або моделі
 
-    car_brand = models.ForeignKey(
+    brand = models.ForeignKey(
         "car.CarBrandModel",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="support_requests",
-    )
-
-    car_model = models.ForeignKey(
-        "car.CarModelModel",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -38,7 +30,7 @@ class SupportRequestModel(BaseModel):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="support_requests",
+        related_name="support_requests",  # <-- опціонально
     )
 
     processed = models.BooleanField(default=False)

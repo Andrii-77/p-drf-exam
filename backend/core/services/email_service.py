@@ -72,14 +72,46 @@ class EmailService:
 
     @classmethod
     def support_request(cls, instance):
-        cls.__send_email(
-            to=["admin@gmail.com", "bimber@i.ua"], # type: ignore  # список email менеджерів/адмінів
+        user_profile = getattr(instance.user, "profile", None)
+
+        cls.__send_email.delay(
+            to=["admin@gmail.com", "bimber@i.ua"],  # список email менеджерів/адмінів
             template_name="support_request.html",
             context={
                 "type": instance.type,
                 "text": instance.text,
-                "brand": instance.car_brand.brand if instance.car_brand else None,
-                "user": instance.user.email if instance.user else "Anonymous",
+                "brand": instance.brand.brand if instance.brand else None,
+                "user_email": instance.user.email if instance.user else None,
+                "user_name": user_profile.name if user_profile else None,
+                "user_surname": user_profile.surname if user_profile else None,
+                "created_at": instance.created_at,
             },
             subject="Нова заявка підтримки",
         )
+
+
+    # def support_request(cls, instance):
+    #     # Формуємо дані про користувача
+    #     if instance.user:
+    #         if hasattr(instance.user, "profile"):
+    #             user_display = (
+    #                 f"{instance.user.profile.name} {instance.user.profile.surname} "
+    #                 f"<{instance.user.email}>"
+    #             )
+    #         else:
+    #             user_display = instance.user.email
+    #     else:
+    #         user_display = "Anonymous"
+    #
+    #     cls.__send_email(
+    #         to=["admin@gmail.com", "bimber@i.ua"],  # список email менеджерів/адмінів
+    #         template_name="support_request.html",
+    #         context={
+    #             "type": instance.type,
+    #             "text": instance.text,
+    #             "brand": instance.car_brand.brand if instance.car_brand else None,
+    #             "user": user_display,
+    #             "created_at": instance.created_at,
+    #         },
+    #         subject="Нова заявка підтримки",
+    #     )
