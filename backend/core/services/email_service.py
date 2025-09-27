@@ -73,12 +73,12 @@ class EmailService:
     @classmethod
     def support_request(cls, instance):
         user_profile = getattr(instance.user, "profile", None)
-
         cls.__send_email.delay(
             to=["admin@gmail.com", "bimber@i.ua"],  # список email менеджерів/адмінів
             template_name="support_request.html",
             context={
                 "type": instance.type,
+                "type_display": instance.get_type_display(),
                 "text": instance.text,
                 "brand": instance.brand.brand if instance.brand else None,
                 "user_email": instance.user.email if instance.user else None,

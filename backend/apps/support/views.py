@@ -19,8 +19,6 @@ class SupportRequestCreateView(generics.CreateAPIView):
         instance = serializer.save(
             user=self.request.user if self.request.user.is_authenticated else None
         )
-        print("DEBUG USER:", instance.user, instance.user.email if instance.user else None)
+
         # Відправляємо повідомлення менеджерам/адміну
         EmailService.support_request(instance)
-
-# app-1                            | DEBUG USER: user3@gmail.com user3@gmail.co

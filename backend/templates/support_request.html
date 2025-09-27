@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
 {% block body %}
-    <h2 style="color: #2c3e50;">🚗 Нова заявка про відсутній {{ type|lower }}</h2>
+    <h2 style="color: #2c3e50;">🚗 Нова заявка про відсутній {{ type_display|lower }}</h2>
 
-    <p><strong>Тип заявки:</strong> {{ type }}</p>
+    <p><strong>Тип заявки:</strong> {{ type_display }}</p>
 
     {% if brand %}
         <p><strong>Бренд:</strong> {{ brand }}</p>
@@ -13,10 +13,12 @@
 
     <hr>
     <h3>👤 Інформація про відправника</h3>
-    {% if user %}
+    {% if user_email %}
         <p><strong>E-mail:</strong> {{ user_email }}</p>
-        <p><strong>Ім'я:</strong> {{ user_name }}</p>
-        <p><strong>Прізвище:</strong> {{ user_surname }}</p>
+        {% if user_name or user_surname %}
+            <p><strong>Ім'я:</strong> {{ user_name|default:"-" }}</p>
+            <p><strong>Прізвище:</strong> {{ user_surname|default:"-" }}</p>
+        {% endif %}
     {% else %}
         <p><strong>Користувач:</strong> Анонімний</p>
     {% endif %}
