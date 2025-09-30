@@ -131,3 +131,15 @@ class IsManagerOrAdmin(BasePermission):
                     request.user.is_staff or getattr(request.user, 'role', None) in ['manager', 'admin']
             )
         )
+
+# Ще один варіант IsManagerOrAdmin, але завжди буде видавати одне повідомлення і для неавторизованих
+# і для авторизованих але без права доступу:
+# class IsManagerOrAdmin(BasePermission):
+#     message = "У вас немає прав доступу."
+#
+#     def has_permission(self, request, view):
+#         return bool(
+#             getattr(request.user, 'is_staff', False) or
+#             getattr(request.user, 'role', None) in ['manager', 'admin']
+#         )
+# Але це НЕ ДАСТЬ ЗРОЗУМІТИ чи треба користувача залогінити, чи просто показати повідомлення про відсутність прав.

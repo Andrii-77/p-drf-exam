@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import SupportRequestCreateView
+from .views import SupportRequestListCreateView
 
 urlpatterns = [
-    path("", SupportRequestCreateView.as_view(), name="support_list_create"),
+    path("", SupportRequestListCreateView.as_view(), name="support_list_create"),
 ]
