@@ -35,3 +35,10 @@ class SupportRequestSerializer(serializers.ModelSerializer):
                 {"brand": "Для моделі потрібно вказати бренд."}
             )
         return attrs
+
+class SupportRequestProcessSerializer(serializers.ModelSerializer):
+    """Серіалізатор для оновлення тільки processed"""
+    class Meta:
+        model = SupportRequestModel
+        fields = ["id", "processed"]
+        read_only_fields = ["id"]

@@ -7,7 +7,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from ..user.permissions import IsManagerOrAdmin
 from .filters import SupportRequestFilter
 from .models import SupportRequestModel
-from .serializers import SupportRequestSerializer
+from .serializers import SupportRequestProcessSerializer, SupportRequestSerializer
 
 
 class SupportRequestListCreateView(generics.ListCreateAPIView):
@@ -37,6 +37,22 @@ class SupportRequestListCreateView(generics.ListCreateAPIView):
         # надсилаємо повідомлення менеджерам/адміну
         EmailService.support_request(instance)
 
+
+class SupportRequestProcessView(generics.RetrieveUpdateAPIView):
+    """
+    - GET: перегляд конкретної заявки (менеджер/адмін).
+    - PATCH/PUT: оновлення тільки processed.
+    """
+
+    queryset = SupportRequestModel.objects.all()
+    permission_classes = [IsAuthenticated, IsManagerOrAdmin]
+    # serializer_class = SupportRequestProcessSerializer
+    # lookup_field = "id"
+
+    def get_serializer_class(self):
+        if self.request.method in ["PATCH", "PUT"]:
+            return SupportRequestProcessSerializer
+        return SupportRequestSerializer
 
 
 
