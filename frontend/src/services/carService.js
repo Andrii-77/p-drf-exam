@@ -12,10 +12,16 @@ const carService = {
     return apiService.get(`${urls.cars}/${id}`);
   },
 
-  // створення нового авто
-  createCar(data) {
-    return apiService.post(urls.cars, data);
+  // 🧍‍♂️ Усі авто конкретного користувача
+  getUserCars(userId, params = {}) {
+    return apiService.get(urls.userCars(userId), { params });
   },
+
+  // ➕ Створення нового авто користувачем
+  createCar(userId, data) {
+    return apiService.post(urls.userCars(userId), data);
+  },
+
 
   // оновлення авто
   updateCar(id, data) {
@@ -36,24 +42,6 @@ const carService = {
   getModels(params = {}) {
     return apiService.get(urls.models, { params });
   },
-
-  //
-  // // --- заглушки для повідомлень ---
-  // reportMissingBrand(data) {
-  //   console.log("📩 Повідомлення адміну: відсутній бренд", data);
-  //   alert(`Повідомлення надіслано адміністрації: бренд "${data.brand}"`);
-  //   // TODO: пізніше прив’язати до бекенду:
-  //   // return axiosService.post(urls.reportBrand, { name: brandName });
-  // },
-  //
-  // reportMissingModel(data) {
-  //   console.log("📩 Повідомлення адміну: відсутня модель", data);
-  //   alert(
-  //     `Повідомлення надіслано адміністрації: модель "${data.model}" для бренду ${data.brand_name}`
-  //   );
-  //   // TODO: пізніше прив’язати до бекенду:
-  //   // return axiosService.post(urls.reportModel, { brand: brandId, name: modelName });
-  // },
 };
 
 export { carService };

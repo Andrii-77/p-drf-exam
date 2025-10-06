@@ -1,28 +1,62 @@
 const baseURL = '/api';
 
+// Основні сегменти
 const auth = '/auth';
 const cars = '/cars';
 const users = '/users';
-const support = '/support';   // ✅ додали
+const support = '/support';
 
 const urls = {
-  auth: {
-    login: auth,
-    me: `${users}/me`,
-  },
-  cars,
-  brands: `${cars}/brands`,
-  models: `${cars}/models`,
-  users,
-  support,   // ✅ додали
+    // 🔐 Аутентифікація
+    auth: {
+        login: `${auth}`,       // POST /api/auth
+        me: `${users}/me`,      // GET /api/users/me
+    },
+
+    // 🚗 Оголошення
+    cars,                     // /cars
+    brands: `${cars}/brands`, // /cars/brands
+    models: `${cars}/models`, // /cars/models
+
+    // 👤 Користувачі
+    users,                    // /users
+
+    // 🧩 Додаткові розділи
+    support,                  // /support
+
+    // ⚙️ Спеціальний маршрут для створення авто конкретного користувача
+    userCars: (userId) => `${users}/${userId}/cars`,  // /users/:id/cars
 };
 
 export {
-  baseURL,
-  urls
+    baseURL,
+    urls
 };
 
 
+// const baseURL = '/api';
+//
+// const auth = '/auth';
+// const cars = '/cars';
+// const users = '/users';
+// const support = '/support';   // ✅ додали
+//
+// const urls = {
+//   auth: {
+//     login: auth,
+//     me: `${users}/me`,
+//   },
+//   cars,
+//   brands: `${cars}/brands`,
+//   models: `${cars}/models`,
+//   users,
+//   support,   // ✅ додали
+// };
+//
+// export {
+//   baseURL,
+//   urls
+// };
 
 
 // const baseURL = '/api';
@@ -50,7 +84,6 @@ export {
 // };
 
 
-
 // const baseURL = '/api';
 //
 // const auth = '/auth';
@@ -72,7 +105,6 @@ export {
 //   baseURL,
 //   urls
 // };
-
 
 
 // const baseURL = '/api';

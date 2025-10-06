@@ -29,6 +29,14 @@ class CarModelSerializer(serializers.ModelSerializer):
 class CarPosterSerializer(serializers.ModelSerializer):
     brand = CarBrandSerializer(read_only=True)
     model = CarModelSerializer(read_only=True)
+
+    brand_id = serializers.PrimaryKeyRelatedField(
+        queryset=CarBrandModel.objects.all(), source='brand', write_only=True, required=True
+    )
+    model_id = serializers.PrimaryKeyRelatedField(
+        queryset=CarModelModel.objects.all(), source='model', write_only=True, required=True
+    )
+
     user = UserShortSerializer(read_only=True)  # 🔹 тепер віддає ім'я, прізвище, телефон
     region_average_price = serializers.SerializerMethodField()
     country_average_price = serializers.SerializerMethodField()
@@ -41,7 +49,7 @@ class CarPosterSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarPosterModel
         fields = (
-            'id', 'user', 'brand', 'model', 'description', 'original_price',
+            'id', 'user', 'brand', 'brand_id', 'model', 'model_id', 'description', 'original_price',
             'original_currency', 'price_usd', 'price_eur', 'price_uah',
             'exchange_rate_used', 'location', 'status', 'edit_attempts',
             'region_average_price', 'country_average_price',
