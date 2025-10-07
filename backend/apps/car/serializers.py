@@ -27,17 +27,26 @@ class CarModelSerializer(serializers.ModelSerializer):
 
 
 class CarPosterSerializer(serializers.ModelSerializer):
+    # 🔹 Виводимо бренд і модель у вигляді вкладених об’єктів
     brand = CarBrandSerializer(read_only=True)
     model = CarModelSerializer(read_only=True)
 
+    # 🔹 Приймаємо brand_id і model_id для створення/оновлення
     brand_id = serializers.PrimaryKeyRelatedField(
-        queryset=CarBrandModel.objects.all(), source='brand', write_only=True, required=True
+        queryset=CarBrandModel.objects.all(),
+        source='brand',
+        write_only=True,
+        required=True
     )
     model_id = serializers.PrimaryKeyRelatedField(
-        queryset=CarModelModel.objects.all(), source='model', write_only=True, required=True
+        queryset=CarModelModel.objects.all(),
+        source='model',
+        write_only=True,
+        required=True
     )
 
-    user = UserShortSerializer(read_only=True)  # 🔹 тепер віддає ім'я, прізвище, телефон
+    user = UserShortSerializer(read_only=True)
+
     region_average_price = serializers.SerializerMethodField()
     country_average_price = serializers.SerializerMethodField()
     total_views = serializers.SerializerMethodField()
@@ -49,18 +58,23 @@ class CarPosterSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarPosterModel
         fields = (
-            'id', 'user', 'brand', 'brand_id', 'model', 'model_id', 'description', 'original_price',
-            'original_currency', 'price_usd', 'price_eur', 'price_uah',
+            'id', 'user',
+            'brand', 'brand_id',
+            'model', 'model_id',
+            'description',
+            'original_price', 'original_currency',
+            'price_usd', 'price_eur', 'price_uah',
             'exchange_rate_used', 'location', 'status', 'edit_attempts',
             'region_average_price', 'country_average_price',
             'total_views', 'daily_views', 'weekly_views', 'monthly_views',
             'stats_message', 'updated_at', 'created_at'
         )
 
-    def validate_original_price(self, original_price):
-        if original_price <= 0:
-            raise serializers.ValidationError('Price must be greater than 0.')
-        return original_price
+    # 🔧 Валідації
+    def validate_original_price(self, value):
+        if value <= 0:
+            raise serializers.ValidationError('Ціна має бути більшою за 0.')
+        return value
 
     def validate(self, attrs):
         price = attrs.get('original_price')
@@ -75,13 +89,14 @@ class CarPosterSerializer(serializers.ModelSerializer):
         attrs.update(converted)
         return attrs
 
+    # 🔧 Статистика
     def _can_view_stats(self, obj):
         user = self.context['request'].user
         return has_premium_access(user, obj.user)
 
     def get_stats_message(self, obj):
         if not self._can_view_stats(obj):
-            return "Статистика доступна тільки для преміум-продавця власника оголошення, менеджера або адміністратора"
+            return "Статистика доступна тільки для преміум-продавця, менеджера або адміністратора."
         return None
 
     def get_region_average_price(self, obj):
@@ -91,7 +106,7 @@ class CarPosterSerializer(serializers.ModelSerializer):
 
     def get_country_average_price(self, obj):
         if self._can_view_stats(obj):
-            return get_average_prices(obj)['region_average_price']
+            return get_average_prices(obj)['country_average_price']  # 🩵 тут було помилково region_average_price
         return None
 
     def get_total_views(self, obj):
@@ -114,19 +129,22 @@ class CarPosterSerializer(serializers.ModelSerializer):
             return get_view_counts(obj)['monthly_views']
         return None
 
+    # 🔧 Створення
     def create(self, validated_data):
         description = validated_data.get('description', '')
+
+        # Автоматична зміна статусу залежно від контенту
         if contains_bad_words(description):
             validated_data['status'] = 'draft'
         else:
             validated_data['status'] = 'active'
+
         return super().create(validated_data)
 
+    # 🔧 Оновлення
     def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
         description = validated_data.get('description', instance.description)
+        instance.description = description
 
         if contains_bad_words(description):
             instance.edit_attempts += 1
@@ -139,17 +157,14 @@ class CarPosterSerializer(serializers.ModelSerializer):
             instance.status = 'active'
             instance.edit_attempts = 0
 
-        instance.description = description
-
+        # 🔹 Якщо змінюється ціна або валюта — оновлюємо конвертовані значення
         if 'original_price' in validated_data and 'original_currency' in validated_data:
             converted = apply_currency_conversion(
                 validated_data['original_price'],
                 validated_data['original_currency']
             )
-            instance.price_usd = converted['price_usd']
-            instance.price_eur = converted['price_eur']
-            instance.price_uah = converted['price_uah']
-            instance.exchange_rate_used = converted['exchange_rate_used']
+            for field, value in converted.items():
+                setattr(instance, field, value)
 
         instance.save()
         return instance
