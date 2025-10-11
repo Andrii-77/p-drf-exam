@@ -5,11 +5,13 @@ import { Menu } from "../../components/menu/MenuComponent";
 const MainLayout = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-800 text-gray-100">
-      {/* Меню зверху */}
-      <Menu />
+      {/* Фіксоване меню зверху */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Menu />
+      </div>
 
-      {/* Основний контент */}
-      <main className="flex-1 max-w-[1200px] mx-auto p-4 w-full">
+      {/* Основний контент з відступом під висоту меню */}
+      <main className="flex-1 max-w-[1200px] mx-auto p-4 w-full pt-20">
         <Outlet />
       </main>
 

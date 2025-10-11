@@ -6,6 +6,7 @@ from django.template.loader import get_template
 
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -13,6 +14,7 @@ from rest_framework.views import APIView
 
 from core.pagination import PagePagination
 from core.services.banned_words_service import contains_bad_words
+from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.car.filter import CarFilter
 from apps.car.models import CarPosterModel
@@ -177,44 +179,108 @@ class UserSellerToPremiumAccountTypeView(GenericAPIView):
 
 
 class UserAddCarPosterView(generics.ListCreateAPIView):
+    """
+    Відповідає за список авто конкретного користувача
+    і створення нових авто.
+    Підтримує:
+    - фільтри по status, brand, model
+    - сортування по price_usd, brand, model, id
+    - кастомну пагінацію
+    """
     serializer_class = CarPosterSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = PagePagination  # твоя кастомна пагінація
+    pagination_class = PagePagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = CarFilter
+    ordering_fields = ['id', 'price_usd', 'brand__brand', 'model__model']
+    ordering = ['-id']
 
     def get_queryset(self):
-        user_id = self.kwargs.get('pk')  # або як ти називаєш параметр у URL
+        user_id = self.kwargs.get('pk')
         if self.request.user.id != int(user_id):
             raise PermissionDenied("Ви не можете переглядати авто іншого користувача.")
-        # Фільтруємо машини конкретного користувача
         return CarPosterModel.objects.filter(user_id=user_id)
 
     def perform_create(self, serializer):
+        """
+        Створення авто:
+        - перевірка, що користувач створює тільки свої авто
+        - обмеження для базового акаунту
+        - перевірка на погані слова
+        """
         user_id = self.kwargs.get('pk')
         if self.request.user.id != int(user_id):
             raise PermissionDenied("Ви не можете створювати оголошення від імені іншого користувача.")
 
         user = UserModel.objects.get(pk=user_id)
+
+        # обмеження для базового акаунту
         if user.account_type == 'basic' and user.cars.count() >= 1:
             raise PermissionDenied("Користувач з базовим акаунтом може мати лише одне оголошення.")
 
         instance = serializer.save(user=user)
 
-        # Перевірка опису на погані слова
+        # перевірка опису на погані слова
         if contains_bad_words(instance.description):
-            instance.status = 'draft'  # або як там статус чорновика називається
+            instance.status = 'draft'
             instance.save()
 
     def create(self, request, *args, **kwargs):
+        """
+        Після створення додаємо повідомлення залежно від опису авто
+        """
         response = super().create(request, *args, **kwargs)
         instance = CarPosterModel.objects.get(pk=response.data['id'])
+
         if contains_bad_words(instance.description):
-            message = "Опис створеного оголошення містить нецензурну лексику. Оголошення збережено зі статусом 'чорновик'."
+            message = "Опис створеного оголошення містить нецензурну лексику. Оголошення збережено зі статусом 'чернетка'."
         else:
             message = "Оголошення успішно створене та активоване."
 
         response.data['message'] = message
         return response
+
+
+# # 20251011 Змінюю цей клас, щоб була підтримка фільтрів
+# class UserAddCarPosterView(generics.ListCreateAPIView):
+#     serializer_class = CarPosterSerializer
+#     permission_classes = [IsAuthenticated]
+#     pagination_class = PagePagination  # твоя кастомна пагінація
+#     filterset_class = CarFilter
+#
+#     def get_queryset(self):
+#         user_id = self.kwargs.get('pk')  # або як ти називаєш параметр у URL
+#         if self.request.user.id != int(user_id):
+#             raise PermissionDenied("Ви не можете переглядати авто іншого користувача.")
+#         # Фільтруємо машини конкретного користувача
+#         return CarPosterModel.objects.filter(user_id=user_id)
+#
+#     def perform_create(self, serializer):
+#         user_id = self.kwargs.get('pk')
+#         if self.request.user.id != int(user_id):
+#             raise PermissionDenied("Ви не можете створювати оголошення від імені іншого користувача.")
+#
+#         user = UserModel.objects.get(pk=user_id)
+#         if user.account_type == 'basic' and user.cars.count() >= 1:
+#             raise PermissionDenied("Користувач з базовим акаунтом може мати лише одне оголошення.")
+#
+#         instance = serializer.save(user=user)
+#
+#         # Перевірка опису на погані слова
+#         if contains_bad_words(instance.description):
+#             instance.status = 'draft'  # або як там статус чорновика називається
+#             instance.save()
+#
+#     def create(self, request, *args, **kwargs):
+#         response = super().create(request, *args, **kwargs)
+#         instance = CarPosterModel.objects.get(pk=response.data['id'])
+#         if contains_bad_words(instance.description):
+#             message = "Опис створеного оголошення містить нецензурну лексику. Оголошення збережено зі статусом 'чорновик'."
+#         else:
+#             message = "Оголошення успішно створене та активоване."
+#
+#         response.data['message'] = message
+#         return response
 
 
 # class UserAddCarPosterView(GenericAPIView):
