@@ -157,11 +157,14 @@ class CarPosterSerializer(serializers.ModelSerializer):
             instance.status = 'active'
             instance.edit_attempts = 0
 
-        # 🔹 Якщо змінюється ціна або валюта — оновлюємо конвертовані значення
+        # 🔹 Якщо змінюється ціна або валюта — оновлюємо і оригінальні, і конвертовані поля
         if 'original_price' in validated_data and 'original_currency' in validated_data:
+            instance.original_price = validated_data['original_price']
+            instance.original_currency = validated_data['original_currency']
+
             converted = apply_currency_conversion(
-                validated_data['original_price'],
-                validated_data['original_currency']
+                instance.original_price,
+                instance.original_currency
             )
             for field, value in converted.items():
                 setattr(instance, field, value)

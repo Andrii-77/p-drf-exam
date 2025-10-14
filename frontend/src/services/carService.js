@@ -25,12 +25,12 @@ const carService = {
 
   // оновлення авто
   updateCar(id, data) {
-    return apiService.put(`${urls.cars}/${id}/`, data);
+    return apiService.patch(`${urls.cars}/${id}`, data);
   },
 
   // видалення авто
   deleteCar(id) {
-    return apiService.delete(`${urls.cars}/${id}/`);
+    return apiService.delete(`${urls.cars}/${id}`);
   },
 
   // список брендів

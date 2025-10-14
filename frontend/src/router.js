@@ -1,29 +1,5 @@
-// import { createBrowserRouter, Navigate } from "react-router-dom";
-// import {main-layout} from "./layouts/main-layout/main-layout";
-// import {LoginPage} from "./pages/LoginPage";
-// import {CarPostersPage} from "./pages/CarPostersPage";
-//
-// const router = createBrowserRouter([
-//     {
-//         path:'', element:<main-layout/>, children:[
-//             {
-//                 index:true, element:<Navigate to={'login'}/>
-//             },
-//             {
-//                 path:'login', element: <LoginPage/>
-//             },
-//             {
-//                 path:'cars', element: <CarPostersPage/>
-//             }
-//         ]
-//     }
-// ])
-//
-// export {router}
-
 import React from "react";
 import {createBrowserRouter} from "react-router-dom";
-
 
 
 import {NotFoundPage} from "./pages/NotFoundPage";
@@ -39,6 +15,7 @@ import {MainLayout} from "./layouts/main-layout/MainLayout";
 import {WelcomePage} from "./pages/WelcomePage";
 import {ProfilePage} from "./pages/ProfilePage";
 import {CarDetailsPage} from "./pages/CarDetailsPage";
+import {EditCarPosterPage} from "./pages/EditCarPosterPage";
 
 const router = createBrowserRouter([
     {
@@ -52,11 +29,20 @@ const router = createBrowserRouter([
             {path: "register", element: <RegistrationPage/>},
             {path: "profile", element: <ProfilePage/>},
             {path: "cars/:id", element: <CarDetailsPage/>},
+
             {
                 path: "create-car",
                 element: (
                     <ProtectedRouteComponent role="seller">
                         <CreateCarPosterPage/>
+                    </ProtectedRouteComponent>
+                ),
+            },
+            {
+                path: "cars/:id/edit",
+                element: (
+                    <ProtectedRouteComponent role={["seller", "manager", "admin"]}>
+                        <EditCarPosterPage/>
                     </ProtectedRouteComponent>
                 ),
             },
@@ -88,4 +74,28 @@ const router = createBrowserRouter([
     },
 ]);
 
-export {router}
+export {router};
+
+
+// import { createBrowserRouter, Navigate } from "react-router-dom";
+// import {main-layout} from "./layouts/main-layout/main-layout";
+// import {LoginPage} from "./pages/LoginPage";
+// import {CarPostersPage} from "./pages/CarPostersPage";
+//
+// const router = createBrowserRouter([
+//     {
+//         path:'', element:<main-layout/>, children:[
+//             {
+//                 index:true, element:<Navigate to={'login'}/>
+//             },
+//             {
+//                 path:'login', element: <LoginPage/>
+//             },
+//             {
+//                 path:'cars', element: <CarPostersPage/>
+//             }
+//         ]
+//     }
+// ])
+//
+// export {router}
