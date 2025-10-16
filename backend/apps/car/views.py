@@ -116,27 +116,94 @@ class CarRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
 
         return response
 
+
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
+
+        # --- Зберігаємо старі дані ---
+        old_data = {
+            'description': instance.description,
+            'original_price': instance.original_price,
+            'original_currency': instance.original_currency,
+            'location': instance.location,
+            'brand_id': instance.brand_id,
+            'model_id': instance.model_id,
+        }
+
+        # --- Оновлюємо ---
         instance = serializer.save()
 
+        # --- Перевірка на нецензурну лексику ---
         if contains_bad_words(instance.description):
             if instance.edit_attempts >= 3:
                 message = (
-                    "Закінчились три спроби редагування опису. Оголошення передано менеджеру на перевірку."
+                    "⚠️ Опис містить нецензурну лексику. "
+                    "Закінчилися три спроби редагування — оголошення передано менеджеру на перевірку."
+                    f"Поточний статус: {instance.status}."
                 )
             else:
-                message = "Опис містить нецензурну лексику. Оголошення збережено зі статусом 'чернетка'."
+                message = (
+                    "⚠️ Опис містить нецензурну лексику. "
+                    "Оголошення збережено зі статусом 'чернетка'."
+                    f"Поточний статус: {instance.status}."
+                )
         else:
-            message = "Опис оновлено. Оголошення активоване."
+            # --- Перевіряємо, які поля змінились ---
+            changed_fields = []
+            field_names = {
+                'description': 'опис',
+                'original_price': 'ціна',
+                'original_currency': 'валюта',
+                'location': 'локація',
+                'brand_id': 'бренд',
+                'model_id': 'модель',
+            }
 
+            for field, old_value in old_data.items():
+                new_value = getattr(instance, field)
+                if new_value != old_value:
+                    changed_fields.append(field_names.get(field, field))
+
+            if changed_fields:
+                message = (
+                    f"✅ Оголошення оновлено. "
+                    f"Змінено: {', '.join(changed_fields)}. "
+                    f"Поточний статус: {instance.status}."
+                )
+            else:
+                message = f"ℹ️ Дані не змінено. Поточний статус: {instance.status}."
+
+        # --- Формуємо фінальну відповідь ---
         response_data = self.get_serializer(instance).data
         response_data['message'] = message
-
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+# # 20251015 Даю новий код для update
+#     def update(self, request, *args, **kwargs):
+#         partial = kwargs.pop('partial', False)
+#         instance = self.get_object()
+#         serializer = self.get_serializer(instance, data=request.data, partial=partial)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#
+#         if contains_bad_words(instance.description):
+#             if instance.edit_attempts >= 3:
+#                 message = (
+#                     "Закінчились три спроби редагування опису. Оголошення передано менеджеру на перевірку."
+#                 )
+#             else:
+#                 message = "Опис містить нецензурну лексику. Оголошення збережено зі статусом 'чернетка'."
+#         else:
+#             message = "Опис оновлено. Оголошення активоване."
+#
+#         response_data = self.get_serializer(instance).data
+#         response_data['message'] = message
+#
+#         return Response(response_data, status=status.HTTP_200_OK)
 
 
 class BannedWordsListCreateView(ListCreateAPIView):

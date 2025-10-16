@@ -141,11 +141,13 @@ class CarPosterSerializer(serializers.ModelSerializer):
 
         return super().create(validated_data)
 
-    # 🔧 Оновлення
+
+    # --- Оновлення ---
     def update(self, instance, validated_data):
         description = validated_data.get('description', instance.description)
         instance.description = description
 
+        # Перевірка на нецензурну лексику
         if contains_bad_words(description):
             instance.edit_attempts += 1
             if instance.edit_attempts >= 3:
@@ -157,11 +159,12 @@ class CarPosterSerializer(serializers.ModelSerializer):
             instance.status = 'active'
             instance.edit_attempts = 0
 
-        # 🔹 Якщо змінюється ціна або валюта — оновлюємо і оригінальні, і конвертовані поля
-        if 'original_price' in validated_data and 'original_currency' in validated_data:
+        # Ціна та валюта
+        if 'original_price' in validated_data:
             instance.original_price = validated_data['original_price']
+        if 'original_currency' in validated_data:
             instance.original_currency = validated_data['original_currency']
-
+        if 'original_price' in validated_data and 'original_currency' in validated_data:
             converted = apply_currency_conversion(
                 instance.original_price,
                 instance.original_currency
@@ -169,8 +172,50 @@ class CarPosterSerializer(serializers.ModelSerializer):
             for field, value in converted.items():
                 setattr(instance, field, value)
 
+        # Локація
+        if 'location' in validated_data:
+            instance.location = validated_data['location']
+
+        # Бренд/модель
+        if 'brand' in validated_data:
+            instance.brand = validated_data['brand']
+        if 'model' in validated_data:
+            instance.model = validated_data['model']
+
         instance.save()
         return instance
+
+# # # 20251015 Даю новий код для update
+#     # 🔧 Оновлення
+#     def update(self, instance, validated_data):
+#         description = validated_data.get('description', instance.description)
+#         instance.description = description
+#
+#         if contains_bad_words(description):
+#             instance.edit_attempts += 1
+#             if instance.edit_attempts >= 3:
+#                 instance.status = 'inactive'
+#                 EmailService.manager_email_for_car_poster_edit(car=instance)
+#             else:
+#                 instance.status = 'draft'
+#         else:
+#             instance.status = 'active'
+#             instance.edit_attempts = 0
+#
+#         # 🔹 Якщо змінюється ціна або валюта — оновлюємо і оригінальні, і конвертовані поля
+#         if 'original_price' in validated_data and 'original_currency' in validated_data:
+#             instance.original_price = validated_data['original_price']
+#             instance.original_currency = validated_data['original_currency']
+#
+#             converted = apply_currency_conversion(
+#                 instance.original_price,
+#                 instance.original_currency
+#             )
+#             for field, value in converted.items():
+#                 setattr(instance, field, value)
+#
+#         instance.save()
+#         return instance
 
 
 class BannedWordsSerializer(serializers.ModelSerializer):
