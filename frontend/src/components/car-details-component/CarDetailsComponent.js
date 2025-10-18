@@ -1,9 +1,10 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // ✅ додаємо useLocation
 import { useAuth } from "../../context/AuthContext";
 
 const CarDetailsComponent = ({ car }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ доступ до URL та стану навігації
   const { user } = useAuth();
 
   if (!car) return <p className="text-gray-300">Дані завантажуються...</p>;
@@ -19,7 +20,7 @@ const CarDetailsComponent = ({ car }) => {
     price_usd,
     price_eur,
     price_uah,
-    location,
+    location: carLocation,
     status,
     stats_message,
     total_views,
@@ -30,11 +31,20 @@ const CarDetailsComponent = ({ car }) => {
     country_average_price,
   } = car;
 
-  // ✅ Перевірка: чи поточний користувач має право редагувати
+  // ✅ Перевірка, чи користувач може редагувати
   const canEdit =
-    user &&
-    (user.id === owner?.id ||
-      ["manager", "admin"].includes(user.role));
+    user && (user.id === owner?.id || ["manager", "admin"].includes(user.role));
+
+  // ✅ Логіка кнопки "Повернутись"
+  // Якщо користувач потрапив сюди після редагування — у стані є { fromEdit: true }
+  // У такому разі ведемо на /my-cars
+  const handleGoBack = () => {
+    if (location.state?.fromEdit) {
+      navigate("/my-cars");
+    } else {
+      navigate(-1); // стандартна поведінка
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-gray-900 rounded-2xl shadow-lg space-y-6">
@@ -64,8 +74,8 @@ const CarDetailsComponent = ({ car }) => {
       <div className="space-y-1 border-t border-gray-700 pt-4">
         {original_price && (
           <p>
-            <span className="font-medium">Ціна продавця:</span> {original_price}{" "}
-            {original_currency}
+            <span className="font-medium">Ціна продавця:</span>{" "}
+            {original_price} {original_currency}
           </p>
         )}
         {price_usd && <p>≈ {price_usd} USD</p>}
@@ -74,9 +84,9 @@ const CarDetailsComponent = ({ car }) => {
       </div>
 
       {/* Локація */}
-      {location && (
+      {carLocation && (
         <p className="text-sm text-gray-400 border-t border-gray-700 pt-4">
-          📍 Місцезнаходження: {location}
+          📍 Місцезнаходження: {carLocation}
         </p>
       )}
 
@@ -134,8 +144,9 @@ const CarDetailsComponent = ({ car }) => {
 
       {/* Кнопки управління */}
       <div className="pt-6 border-t border-gray-700 flex justify-between items-center">
+        {/* ✅ Кнопка повернення */}
         <button
-          onClick={() => navigate(-1)}
+          onClick={handleGoBack}
           className="bg-gray-700 hover:bg-gray-600 text-gray-100 px-5 py-2 rounded-lg transition"
         >
           ⬅ Повернутись
@@ -144,7 +155,9 @@ const CarDetailsComponent = ({ car }) => {
         {/* ✅ Кнопка редагування — тільки для власника або менеджера/адміна */}
         {canEdit && (
           <button
-            onClick={() => navigate(`/cars/${id}/edit`)}
+            onClick={() =>
+              navigate(`/cars/${id}/edit`, { state: { fromDetails: true } })
+            }
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition"
           >
             ✏️ Редагувати

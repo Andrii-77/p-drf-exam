@@ -43,7 +43,7 @@ const EditCarPosterPage = () => {
         const res = await carService.getCarById(id);
         const car = res.data;
 
-        // заповнення форми
+        // Заповнюємо форму поточними значеннями
         setValue("brand", car.brand?.id || "");
         setValue("model", car.model?.id || "");
         setValue("description", car.description || "");
@@ -101,8 +101,7 @@ const EditCarPosterPage = () => {
       };
 
       const res = await carService.updateCar(id, preparedData);
-      const message =
-        res.data?.message || "✅ Оголошення успішно оновлено.";
+      const message = res.data?.message || "✅ Оголошення успішно оновлено.";
 
       setSuccessMessage(message);
     } catch (err) {
@@ -116,9 +115,12 @@ const EditCarPosterPage = () => {
     }
   };
 
+  // ✅ Після підтвердження успіху — переходимо на сторінку опису авто
   const handleCloseSuccess = () => {
     setSuccessMessage(null);
-    navigate(`/cars/${id}`);
+
+    // 🔹 Передаємо state, щоб CarDetailsPage міг зрозуміти, що ми прийшли після редагування
+    navigate(`/cars/${id}`, { state: { fromEdit: true } });
   };
 
   if (loading) {
