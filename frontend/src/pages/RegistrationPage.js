@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { userService } from "../services/usersService";
+import { userService } from "../services/userService";
 import { useForm } from "react-hook-form";
 
 const RegistrationPage = () => {

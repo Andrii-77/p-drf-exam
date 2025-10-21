@@ -1,21 +1,37 @@
 import React from "react";
+import { UsersComponent } from "../components/users-component/UsersComponent";
 
-const ManagerDashboardPage = () => {
+const ManagerDashboardPage = ({ user }) => {
   return (
     <div className="p-8 min-h-[80vh] bg-gray-800 text-gray-100">
-      <h1 className="text-2xl font-bold mb-5">
-        Manager Dashboard
-      </h1>
-      <p className="text-gray-300">
-        Ця сторінка доступна лише менеджеру.
-      </p>
-
-      {/* TODO: тут можна додати модерацію оголошень, статистику тощо */}
+      <h1 className="text-2xl font-bold mb-5">Manager Dashboard</h1>
+      <UsersComponent user={user} />
     </div>
   );
 };
 
 export { ManagerDashboardPage };
+
+
+
+// import React from "react";
+//
+// const ManagerDashboardPage = () => {
+//   return (
+//     <div className="p-8 min-h-[80vh] bg-gray-800 text-gray-100">
+//       <h1 className="text-2xl font-bold mb-5">
+//         Manager Dashboard
+//       </h1>
+//       <p className="text-gray-300">
+//         Ця сторінка доступна лише менеджеру.
+//       </p>
+//
+//       {/* TODO: тут можна додати модерацію оголошень, статистику тощо */}
+//     </div>
+//   );
+// };
+//
+// export { ManagerDashboardPage };
 
 
 

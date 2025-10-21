@@ -1,3 +1,26 @@
+// import React from "react";
+// import { useAuth } from "../context/AuthContext";
+// import { Navigate } from "react-router-dom";
+// import {UserDetailsPage} from "./UserDetailsPage";
+//
+// const ProfilePage = () => {
+//   const { user, isAuthenticated } = useAuth();
+//
+//   if (!isAuthenticated) {
+//     return <Navigate to="/login" />;
+//   }
+//
+//   return (
+//     <div className="p-4">
+//       <UserDetailsPage userData={user} />
+//     </div>
+//   );
+// };
+//
+// export { ProfilePage };
+
+
+// 20251021 Змінюю це по пропозиції ШІ.
 import React from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
