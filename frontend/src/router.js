@@ -16,6 +16,11 @@ import {WelcomePage} from "./pages/WelcomePage";
 import {ProfilePage} from "./pages/ProfilePage";
 import {CarDetailsPage} from "./pages/CarDetailsPage";
 import {EditCarPosterPage} from "./pages/EditCarPosterPage";
+import {ModerationPage} from "./pages/ModerationPage";
+import {ExchangeRatesPage} from "./pages/ExchangeRatesPage";
+import {StatisticsPage} from "./pages/StatisticsPage";
+import {SettingsPage} from "./pages/SettingsPage";
+import {UsersComponent} from "./components/users-component/UsersComponent";
 
 const router = createBrowserRouter([
     {
@@ -67,6 +72,46 @@ const router = createBrowserRouter([
                 element: (
                     <ProtectedRouteComponent role="admin">
                         <AdminDashboardPage/>
+                    </ProtectedRouteComponent>
+                ),
+            },
+            {
+                path: "moderation",
+                element: (
+                    <ProtectedRouteComponent role={["manager", "admin"]}>
+                        <ModerationPage/>
+                    </ProtectedRouteComponent>
+                ),
+            },
+            {
+                path: "users",
+                element: (
+                    <ProtectedRouteComponent role={["manager", "admin"]}>
+                        <UsersComponent/>
+                    </ProtectedRouteComponent>
+                ),
+            },
+            {
+                path: "exchange-rates",
+                element: (
+                    <ProtectedRouteComponent role="admin">
+                        <ExchangeRatesPage/>
+                    </ProtectedRouteComponent>
+                ),
+            },
+            {
+                path: "statistics",
+                element: (
+                    <ProtectedRouteComponent role="admin">
+                        <StatisticsPage/>
+                    </ProtectedRouteComponent>
+                ),
+            },
+            {
+                path: "settings",
+                element: (
+                    <ProtectedRouteComponent role="admin">
+                        <SettingsPage/>
                     </ProtectedRouteComponent>
                 ),
             },

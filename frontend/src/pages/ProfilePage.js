@@ -29,7 +29,7 @@ const ProfilePage = () => {
   const { user, isAuthenticated, logout } = useAuth();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/" />;
   }
 
   const displayName =
