@@ -13,10 +13,10 @@ const UserDetailsPage = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const { data } = await userService.getAll(); // або зробіть userService.getById(id), якщо реалізуєте
-        const foundUser = data.data.find((u) => u.id === Number(id)); // тимчасове рішення, поки нема getById
-        setUser(foundUser);
+        const { data } = await userService.getById(id);
+        setUser(data);
       } catch (err) {
+        console.error("Помилка при завантаженні користувача:", err);
         setError("Не вдалося завантажити дані користувача.");
       } finally {
         setLoading(false);
@@ -57,23 +57,15 @@ const UserDetailsPage = () => {
   return (
     <div className="p-6 min-h-[80vh] bg-gray-800 text-gray-100 flex justify-center">
       <div className="bg-gray-900 p-8 rounded-2xl shadow-lg w-full max-w-2xl space-y-6">
-        {/* Назва сторінки */}
         <h1 className="text-2xl font-bold text-center border-b border-gray-700 pb-3">
           Деталі користувача
         </h1>
 
-        {/* Основна інформація */}
         <div className="space-y-2 text-gray-300">
-          <p>
-            <strong className="text-gray-100">Email:</strong> {email}
-          </p>
-          <p>
-            <strong className="text-gray-100">Роль:</strong> {role}
-          </p>
+          <p><strong className="text-gray-100">Email:</strong> {email}</p>
+          <p><strong className="text-gray-100">Роль:</strong> {role}</p>
           {account_type && (
-            <p>
-              <strong className="text-gray-100">Тип акаунту:</strong> {account_type}
-            </p>
+            <p><strong className="text-gray-100">Тип акаунту:</strong> {account_type}</p>
           )}
           <p>
             <strong className="text-gray-100">Статус:</strong>{" "}
@@ -93,25 +85,17 @@ const UserDetailsPage = () => {
           </p>
         </div>
 
-        {/* Профіль */}
         {profile && (
           <div className="pt-4 border-t border-gray-700">
             <h2 className="text-lg font-semibold mb-2">Профіль</h2>
             <div className="space-y-1 text-gray-300">
-              <p>
-                <strong className="text-gray-100">Ім’я:</strong> {profile.name}
-              </p>
-              <p>
-                <strong className="text-gray-100">Прізвище:</strong> {profile.surname}
-              </p>
-              <p>
-                <strong className="text-gray-100">Телефон:</strong> {profile.phone_number}
-              </p>
+              <p><strong className="text-gray-100">Ім’я:</strong> {profile.name}</p>
+              <p><strong className="text-gray-100">Прізвище:</strong> {profile.surname}</p>
+              <p><strong className="text-gray-100">Телефон:</strong> {profile.phone_number}</p>
             </div>
           </div>
         )}
 
-        {/* Кнопки */}
         <div className="pt-6 border-t border-gray-700 flex justify-between items-center">
           <button
             onClick={() => navigate(-1)}
