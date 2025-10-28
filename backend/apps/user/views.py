@@ -24,11 +24,38 @@ from apps.user.serializers import UserSerializer
 
 UserModel = get_user_model()
 
+from rest_framework.filters import OrderingFilter
+
+from core.pagination import PagePagination
+from django_filters.rest_framework import DjangoFilterBackend
+
+from apps.user.filter import UserFilter  # 🔹 додали імпорт
+
 
 class UserListCreateView(ListCreateAPIView):
+    """
+    Повертає список користувачів із підтримкою:
+    - фільтрації по role, account_type, is_active
+    - сортування по id, email, role, is_active, account_type
+    - пагінації
+    """
     queryset = UserModel.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+    # 🔹 додаємо фільтрацію, сортування і пагінацію
+    pagination_class = PagePagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = UserFilter
+    ordering_fields = ["id", "email", "role", "is_active", "account_type"]
+    ordering = ["-id"]
+
+
+# # 20251028 Оновлюю цей клас, щоб на фронтенді була можливість сортування і фільтрації
+# class UserListCreateView(ListCreateAPIView):
+#     queryset = UserModel.objects.all()
+#     serializer_class = UserSerializer
+#     permission_classes = [AllowAny]
 
 
 class BlockUserView(GenericAPIView):
@@ -362,6 +389,7 @@ class SendEmailTestView(GenericAPIView):
         msg.send()
         return Response({'message': 'Email sent!'}, status.HTTP_200_OK)
 
+
 class UserDetailView(RetrieveUpdateDestroyAPIView):
     queryset = UserModel.objects.all()
     serializer_class = UserSerializer
@@ -370,6 +398,7 @@ class UserDetailView(RetrieveUpdateDestroyAPIView):
         if self.request.method == 'GET':
             return [AllowAny()]  # будь-хто може побачити юзера
         return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]  # редагувати/видалити — тільки з правами
+
 
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
