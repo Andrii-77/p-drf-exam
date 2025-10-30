@@ -27,12 +27,12 @@ const userService = {
 
   // 🔹 Оновити дані користувача (повністю або частково)
   update(id, data) {
-    return apiService.patch(`${urls.users}/${id}/`, data);
+    return apiService.patch(`${urls.users}/${id}`, data);
   },
 
   // 🔹 Видалити користувача (опціонально)
   delete(id) {
-    return apiService.delete(`${urls.users}/${id}/`);
+    return apiService.delete(`${urls.users}/${id}`);
   },
 };
 
