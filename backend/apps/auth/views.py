@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import status
 from rest_framework.generics import GenericAPIView, get_object_or_404
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from core.services.email_service import EmailService
@@ -11,7 +11,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.user.serializers import UserSerializer
 
-from .serializers import CustomTokenObtainPairSerializer, EmailSerializer, PasswordSerializer
+from .serializers import ChangePasswordSerializer, CustomTokenObtainPairSerializer, EmailSerializer, PasswordSerializer
 
 UserModel = get_user_model()
 
@@ -58,6 +58,24 @@ class RecoveryPasswordView(GenericAPIView):
         user.save()
         serializer = UserSerializer(user)
         return Response(serializer.data, status.HTTP_200_OK)
+
+
+class ChangePasswordView(GenericAPIView):
+    """
+    Дозволяє автентифікованому користувачу змінити свій пароль.
+    Після успішної зміни користувач мусить повторно увійти в систему.
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ChangePasswordSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {'detail': 'Пароль успішно змінено. Будь ласка, увійдіть знову.'},
+            status=status.HTTP_200_OK
+        )
 
 
 
