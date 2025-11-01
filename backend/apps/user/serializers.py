@@ -23,7 +23,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         )
 
 
-# 🔹 Новий серіалізатор для використання у CarPosterSerializer
+# 🔹 Короткий варіант для використання у зв’язках (наприклад, у CarPosterSerializer)
 class UserShortSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
 
@@ -32,10 +32,9 @@ class UserShortSerializer(serializers.ModelSerializer):
         fields = ("id", "email", "profile")
 
 
+# 🔹 Базовий серіалізатор користувача (для звичайних користувачів)
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
-    # ВАЖЛИВО: тут більше НЕ імпортуємо CarPosterSerializer,
-    # щоб уникнути циклу. cars можна додати через інший механізм при потребі.
 
     class Meta:
         model = UserModel
@@ -59,9 +58,7 @@ class UserSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         )
         extra_kwargs = {
-            'password': {
-                'write_only': True,
-            }
+            'password': {'write_only': True},
         }
 
     @atomic
@@ -87,19 +84,46 @@ class UserSerializer(serializers.ModelSerializer):
 
         return instance
 
+# # 20251101 Змінюю, щоб при зміні ролі на покупця не була помилка з типом акаунту.
+#     def validate(self, attrs):
+#         role = attrs.get('role', getattr(self.instance, 'role', None))
+#         account_type = attrs.get('account_type', getattr(self.instance, 'account_type', None))
+#
+#         if role != 'seller' and account_type:
+#             raise serializers.ValidationError(
+#                 "Тип акаунта (basic/premium) може бути лише для продавців."
+#             )
+#         return attrs
+
     def validate(self, attrs):
         role = attrs.get('role', getattr(self.instance, 'role', None))
         account_type = attrs.get('account_type', getattr(self.instance, 'account_type', None))
 
-        if role != 'seller' and account_type:
-            raise serializers.ValidationError(
-                "Тип акаунта (basic/premium) може бути лише для продавців."
-            )
+        # Якщо роль не продавець — очищуємо тип акаунта, а не піднімаємо помилку
+        if role != 'seller':
+            attrs['account_type'] = ""
+        else:
+            # Якщо роль продавець — переконаймося, що тип акаунта задано
+            if not account_type:
+                raise serializers.ValidationError(
+                    "Для продавця обов’язково потрібно вибрати тип акаунта (basic/premium)."
+                )
+
         return attrs
 
+# 🔹 Новий серіалізатор для менеджерів/адміністраторів
+class AdminUserUpdateSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        # Ті самі поля, але дозволяємо редагувати role, account_type, is_active
+        read_only_fields = (
+            'id', 'is_staff', 'is_superuser', 'last_login',
+            'created_at', 'updated_at'
+        )
 
 
 
+
+# # 20251101 Змінюю, щоб адмін і менеджер могли редагувати role, account_type, is_active.
 # from django.contrib.auth import get_user_model
 # from django.db.transaction import atomic
 #
@@ -107,7 +131,6 @@ class UserSerializer(serializers.ModelSerializer):
 #
 # from core.services.email_service import EmailService
 #
-# from apps.car.serializers import CarPosterSerializer
 # from apps.user.models import ProfileModel
 #
 # UserModel = get_user_model()
@@ -126,9 +149,19 @@ class UserSerializer(serializers.ModelSerializer):
 #         )
 #
 #
+# # 🔹 Новий серіалізатор для використання у CarPosterSerializer
+# class UserShortSerializer(serializers.ModelSerializer):
+#     profile = ProfileSerializer(read_only=True)
+#
+#     class Meta:
+#         model = UserModel
+#         fields = ("id", "email", "profile")
+#
+#
 # class UserSerializer(serializers.ModelSerializer):
 #     profile = ProfileSerializer()
-#     cars = CarPosterSerializer(many=True, read_only=True)
+#     # ВАЖЛИВО: тут більше НЕ імпортуємо CarPosterSerializer,
+#     # щоб уникнути циклу. cars можна додати через інший механізм при потребі.
 #
 #     class Meta:
 #         model = UserModel
@@ -145,11 +178,12 @@ class UserSerializer(serializers.ModelSerializer):
 #             'created_at',
 #             'updated_at',
 #             'profile',
-#             'cars',
 #         )
-#         # depth = 1
-#         read_only_fields = ('id', 'role', 'account_type', 'is_active', 'is_staff', 'is_superuser', 'last_login',
-#                             'created_at', 'updated_at')
+#         read_only_fields = (
+#             'id', 'role', 'account_type', 'is_active',
+#             'is_staff', 'is_superuser', 'last_login',
+#             'created_at', 'updated_at'
+#         )
 #         extra_kwargs = {
 #             'password': {
 #                 'write_only': True,
@@ -188,4 +222,3 @@ class UserSerializer(serializers.ModelSerializer):
 #                 "Тип акаунта (basic/premium) може бути лише для продавців."
 #             )
 #         return attrs
-

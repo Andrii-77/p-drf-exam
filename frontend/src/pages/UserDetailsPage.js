@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import {useParams, useNavigate, useLocation} from "react-router-dom";
 import { userService } from "../services/userService";
 
 const UserDetailsPage = () => {
   const { id } = useParams();
+  const location = useLocation(); // ✅ доступ до URL та стану навігації
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
@@ -54,6 +55,14 @@ const UserDetailsPage = () => {
     profile,
   } = user;
 
+    const handleGoBack = () => {
+    if (location.state?.fromEdit) {
+      navigate("/users");
+    } else {
+      navigate(-1); // стандартна поведінка
+    }
+  };
+
   return (
     <div className="p-6 min-h-[80vh] bg-gray-800 text-gray-100 flex justify-center">
       <div className="bg-gray-900 p-8 rounded-2xl shadow-lg w-full max-w-2xl space-y-6">
@@ -98,7 +107,7 @@ const UserDetailsPage = () => {
 
         <div className="pt-6 border-t border-gray-700 flex justify-between items-center">
           <button
-            onClick={() => navigate(-1)}
+            onClick={handleGoBack}
             className="bg-gray-700 hover:bg-gray-600 text-gray-100 px-5 py-2 rounded-lg transition"
           >
             ⬅ Повернутись

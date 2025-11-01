@@ -20,7 +20,7 @@ from apps.car.filter import CarFilter
 from apps.car.models import CarPosterModel
 from apps.car.serializers import CarPosterSerializer
 from apps.user.permissions import IsOwnerOrManagerOrAdmin
-from apps.user.serializers import UserSerializer
+from apps.user.serializers import AdminUserUpdateSerializer, UserSerializer
 
 UserModel = get_user_model()
 
@@ -143,6 +143,7 @@ class UserToManagerRoleView(GenericAPIView):
         user = self.get_object()
         if not user.role == "manager":
             user.role = "manager"
+            user.account_type = ""  # очищуємо при зміні
             user.save()
 
         serializer = UserSerializer(user)
@@ -157,6 +158,7 @@ class UserToAdminRoleView(GenericAPIView):
         user = self.get_object()
         if not user.role == "admin":
             user.role = "admin"
+            user.account_type = ""  # очищуємо при зміні
             user.save()
 
         serializer = UserSerializer(user)
@@ -171,6 +173,7 @@ class UserToBuyerRoleView(GenericAPIView):
         user = self.get_object()
         if not user.role == "buyer":
             user.role = "buyer"
+            user.account_type = ""  # очищуємо при зміні
             user.save()
 
         serializer = UserSerializer(user)
@@ -389,6 +392,15 @@ class SendEmailTestView(GenericAPIView):
         msg.send()
         return Response({'message': 'Email sent!'}, status.HTTP_200_OK)
 
+# 20251101 Змінюю, щоб адмін і менеджер могли редагувати role, account_type, is_active.
+# class UserDetailView(RetrieveUpdateDestroyAPIView):
+#     queryset = UserModel.objects.all()
+#     serializer_class = UserSerializer
+#
+#     def get_permissions(self):
+#         if self.request.method == 'GET':
+#             return [AllowAny()]  # будь-хто може побачити юзера
+#         return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]  # редагувати/видалити — тільки з правами
 
 class UserDetailView(RetrieveUpdateDestroyAPIView):
     queryset = UserModel.objects.all()
@@ -396,8 +408,18 @@ class UserDetailView(RetrieveUpdateDestroyAPIView):
 
     def get_permissions(self):
         if self.request.method == 'GET':
-            return [AllowAny()]  # будь-хто може побачити юзера
-        return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]  # редагувати/видалити — тільки з правами
+            return [AllowAny()]
+        return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]
+
+    def get_serializer_class(self):
+        """
+        Менеджер або адміністратор можуть змінювати role, account_type і is_active.
+        Власник — лише свої особисті дані.
+        """
+        user = self.request.user
+        if user.is_authenticated and getattr(user, "role", None) in ["manager", "admin"]:
+            return AdminUserUpdateSerializer
+        return UserSerializer
 
 
 class CurrentUserView(APIView):
