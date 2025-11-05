@@ -88,7 +88,6 @@ class EditCarPosterPermission(BasePermission):
     #
     #     raise PermissionDenied("У вас немає прав змінювати або видаляти це оголошення.")
 
-
 class IsOwnerOrManagerOrAdmin(BasePermission):
     """
     Дозволяє зміну/видалення лише власнику, менеджеру або адміну.
@@ -97,18 +96,41 @@ class IsOwnerOrManagerOrAdmin(BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
 
-        if not user.is_authenticated:
-            raise PermissionDenied("Неавторизовані користувачі не мають доступу.")
+        if not user or not user.is_authenticated:
+            return False
 
-        # Перевірка ролей або статусу
-        if user.is_superuser or getattr(user, "role") in ("manager", "admin"):
+        # Якщо адміністратор або менеджер
+        if getattr(user, "is_superuser", False) or getattr(user, "role", None) in ("manager", "admin"):
             return True
 
-        # Власник (наприклад, user переглядає/редагує свої дані)
+        # Якщо власник (перевірка, що користувач редагує сам себе)
         if obj == user:
-            return True  # власник акаунта
+            return True
 
-        raise PermissionDenied("У вас немає прав доступу до цього користувача.")
+        return False
+
+
+# # 20251105 Роблю маленькі зміни по пораді ШІ, цей код коментую, новий зверху.
+# class IsOwnerOrManagerOrAdmin(BasePermission):
+#     """
+#     Дозволяє зміну/видалення лише власнику, менеджеру або адміну.
+#     """
+#
+#     def has_object_permission(self, request, view, obj):
+#         user = request.user
+#
+#         if not user.is_authenticated:
+#             raise PermissionDenied("Неавторизовані користувачі не мають доступу.")
+#
+#         # Перевірка ролей або статусу
+#         if user.is_superuser or getattr(user, "role") in ("manager", "admin"):
+#             return True
+#
+#         # Власник (наприклад, user переглядає/редагує свої дані)
+#         if obj == user:
+#             return True  # власник акаунта
+#
+#         raise PermissionDenied("У вас немає прав доступу до цього користувача.")
 
 
 class HasPremiumAccessPermission(BasePermission):
