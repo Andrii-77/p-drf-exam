@@ -405,11 +405,13 @@ class SendEmailTestView(GenericAPIView):
 class UserDetailView(RetrieveUpdateDestroyAPIView):
     queryset = UserModel.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrManagerOrAdmin]  # ✅ тепер для GET також
 
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            return [AllowAny()]
-        return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]
+# # 20251105 Коментую код знизу, щоб доступ до даних користувача були тільки по дозволах, а не кожному.
+#     def get_permissions(self):
+#         if self.request.method == 'GET':
+#             return [AllowAny()]
+#         return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]
 
     def get_serializer_class(self):
         """

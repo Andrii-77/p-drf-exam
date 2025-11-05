@@ -88,10 +88,15 @@ class EditCarPosterPermission(BasePermission):
     #
     #     raise PermissionDenied("У вас немає прав змінювати або видаляти це оголошення.")
 
+
 class IsOwnerOrManagerOrAdmin(BasePermission):
     """
-    Дозволяє зміну/видалення лише власнику, менеджеру або адміну.
+    Дозволяє доступ до об'єкта лише:
+    - власнику (user == obj)
+    - менеджеру або адміну
     """
+
+    message = "У вас немає прав доступу до цього користувача."
 
     def has_object_permission(self, request, view, obj):
         user = request.user
@@ -99,15 +104,36 @@ class IsOwnerOrManagerOrAdmin(BasePermission):
         if not user or not user.is_authenticated:
             return False
 
-        # Якщо адміністратор або менеджер
+        # Адмін або менеджер бачить усіх
         if getattr(user, "is_superuser", False) or getattr(user, "role", None) in ("manager", "admin"):
             return True
 
-        # Якщо власник (перевірка, що користувач редагує сам себе)
-        if obj == user:
-            return True
+        # Власник бачить лише себе
+        return obj == user
 
-        return False
+
+
+# # 20251105 Змінюю на ще кращу версію.
+# class IsOwnerOrManagerOrAdmin(BasePermission):
+#     """
+#     Дозволяє зміну/видалення лише власнику, менеджеру або адміну.
+#     """
+#
+#     def has_object_permission(self, request, view, obj):
+#         user = request.user
+#
+#         if not user or not user.is_authenticated:
+#             return False
+#
+#         # Якщо адміністратор або менеджер
+#         if getattr(user, "is_superuser", False) or getattr(user, "role", None) in ("manager", "admin"):
+#             return True
+#
+#         # Якщо власник (перевірка, що користувач редагує сам себе)
+#         if obj == user:
+#             return True
+#
+#         return False
 
 
 # # 20251105 Роблю маленькі зміни по пораді ШІ, цей код коментую, новий зверху.
