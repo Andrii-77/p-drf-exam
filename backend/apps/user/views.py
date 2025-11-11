@@ -402,26 +402,107 @@ class SendEmailTestView(GenericAPIView):
 #             return [AllowAny()]  # будь-хто може побачити юзера
 #         return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]  # редагувати/видалити — тільки з правами
 
+
+
+
 class UserDetailView(RetrieveUpdateDestroyAPIView):
     queryset = UserModel.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrManagerOrAdmin]  # ✅ тепер для GET також
-
-# # 20251105 Коментую код знизу, щоб доступ до даних користувача були тільки по дозволах, а не кожному.
-#     def get_permissions(self):
-#         if self.request.method == 'GET':
-#             return [AllowAny()]
-#         return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]
+    permission_classes = [IsAuthenticated, IsOwnerOrManagerOrAdmin]
 
     def get_serializer_class(self):
-        """
-        Менеджер або адміністратор можуть змінювати role, account_type і is_active.
-        Власник — лише свої особисті дані.
-        """
+        """Визначає, який серіалізатор використовувати."""
         user = self.request.user
         if user.is_authenticated and getattr(user, "role", None) in ["manager", "admin"]:
             return AdminUserUpdateSerializer
         return UserSerializer
+
+    def update(self, request, *args, **kwargs):
+        """Контролює, які поля можна змінювати користувачу залежно від його ролі."""
+        instance = self.get_object()
+        current_user = request.user
+        data = request.data.copy()
+
+        # --- 🔒 Якщо користувач звичайний (buyer/seller)
+        if current_user.role in ["buyer", "seller"]:
+            # ❌ Може змінювати лише свій профіль
+            if instance.id != current_user.id:
+                return Response(
+                    {"detail": "Ви можете редагувати лише власний профіль."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # ✅ Дозволяємо змінювати лише 'role' (buyer/seller) і 'profile'
+            allowed_fields = ["role", "profile"]
+            for field in list(data.keys()):
+                if field not in allowed_fields:
+                    data.pop(field, None)
+
+            # ❌ Забороняємо змінювати роль на admin або manager
+            new_role = data.get("role")
+            if new_role and new_role not in ["buyer", "seller"]:
+                return Response(
+                    {"detail": "Ви можете змінювати роль лише між buyer та seller."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        # --- 🔓 Якщо менеджер або адмін — дозволено все
+        serializer_class = self.get_serializer_class()
+        serializer = serializer_class(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        # === Викликаємо стандартний perform_update() з нашою логікою деактивації
+        self.perform_update(serializer)
+
+        response_data = serializer.data
+
+        # Додаємо додаткове повідомлення про деактивацію, якщо воно є
+        extra_message = getattr(self, "extra_message", None)
+        if extra_message:
+            response_data["message"] = extra_message
+        else:
+            response_data["message"] = "Дані користувача успішно оновлено."
+
+        return Response(response_data)
+
+    def perform_update(self, serializer):
+        user_before = self.get_object()
+        user_after = serializer.save()
+
+        # Деактивація авто, якщо роль змінилася з seller на buyer
+        self.extra_message = None
+        if user_before.role == "seller" and user_after.role == "buyer":
+            from apps.car.models import CarPosterModel
+
+            # знаходимо активні оголошення користувача
+            active_cars = CarPosterModel.objects.filter(user=user_after, status="active")
+
+            # оновлюємо статус на draft
+            deactivated_count = active_cars.update(status="draft")
+            if deactivated_count:
+                self.extra_message = f"Роль змінено з 'seller' на 'buyer'. Деактивовано {deactivated_count} оголошень."
+
+# # 20251111 Оновлюю цей клас, щоб можна було змінювати ролі при редагуванні профілю.
+# class UserDetailView(RetrieveUpdateDestroyAPIView):
+#     queryset = UserModel.objects.all()
+#     serializer_class = UserSerializer
+#     permission_classes = [IsAuthenticated, IsOwnerOrManagerOrAdmin]  # ✅ тепер для GET також
+#
+# # # 20251105 Коментую код знизу, щоб доступ до даних користувача були тільки по дозволах, а не кожному.
+# #     def get_permissions(self):
+# #         if self.request.method == 'GET':
+# #             return [AllowAny()]
+# #         return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]
+#
+#     def get_serializer_class(self):
+#         """
+#         Менеджер або адміністратор можуть змінювати role, account_type і is_active.
+#         Власник — лише свої особисті дані.
+#         """
+#         user = self.request.user
+#         if user.is_authenticated and getattr(user, "role", None) in ["manager", "admin"]:
+#             return AdminUserUpdateSerializer
+#         return UserSerializer
 
 
 class CurrentUserView(APIView):
