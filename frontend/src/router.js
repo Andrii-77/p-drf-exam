@@ -22,9 +22,9 @@ import {SettingsPage} from "./pages/SettingsPage";
 
 import {ProtectedRouteComponent} from "./components/protected-route-component/ProtectedRouteComponent";
 
-// сторінки користувачів
 import {UserDetailsPage} from "./pages/UserDetailsPage";
 import {EditUserPage} from "./pages/EditUserPage";
+import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 
 const router = createBrowserRouter([
     {
@@ -113,6 +113,7 @@ const router = createBrowserRouter([
                 children: [
                     {path: "users/:id", element: <UserDetailsPage/>},
                     {path: "users/:id/edit", element: <EditUserPage/>},
+                    { path: "users/change-password", element: <ChangePasswordPage /> },
                 ],
             },
 
