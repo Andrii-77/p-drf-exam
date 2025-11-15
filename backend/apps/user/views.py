@@ -257,18 +257,42 @@ class UserAddCarPosterView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         """
-        Після створення додаємо повідомлення залежно від опису авто
+        Після створення додаємо повідомлення залежно від опису авто.
+        Додано: дружня обробка PermissionDenied.
         """
-        response = super().create(request, *args, **kwargs)
+        try:
+            response = super().create(request, *args, **kwargs)
+        except PermissionDenied as e:
+            return Response({"detail": str(e)}, status=status.HTTP_403_FORBIDDEN)
+
         instance = CarPosterModel.objects.get(pk=response.data['id'])
 
         if contains_bad_words(instance.description):
-            message = "Опис створеного оголошення містить нецензурну лексику. Оголошення збережено зі статусом 'чернетка'."
+            message = (
+                "Опис створеного оголошення містить нецензурну лексику. "
+                "Оголошення збережено зі статусом 'чернетка'."
+            )
         else:
             message = "Оголошення успішно створене та активоване."
 
         response.data['message'] = message
         return response
+
+# 20251115 Змінюю def create, щоб з бекенду приходили дружні повідомлення у випадку помилок.
+    # def create(self, request, *args, **kwargs):
+    #     """
+    #     Після створення додаємо повідомлення залежно від опису авто
+    #     """
+    #     response = super().create(request, *args, **kwargs)
+    #     instance = CarPosterModel.objects.get(pk=response.data['id'])
+    #
+    #     if contains_bad_words(instance.description):
+    #         message = "Опис створеного оголошення містить нецензурну лексику. Оголошення збережено зі статусом 'чернетка'."
+    #     else:
+    #         message = "Оголошення успішно створене та активоване."
+    #
+    #     response.data['message'] = message
+    #     return response
 
 
 # # 20251011 Змінюю цей клас, щоб була підтримка фільтрів

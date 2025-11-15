@@ -90,26 +90,42 @@ class EditCarPosterPermission(BasePermission):
 
 
 class IsOwnerOrManagerOrAdmin(BasePermission):
-    """
-    Дозволяє доступ до об'єкта лише:
-    - власнику (user == obj)
-    - менеджеру або адміну
-    """
-
     message = "У вас немає прав доступу до цього користувача."
 
     def has_object_permission(self, request, view, obj):
         user = request.user
 
-        if not user or not user.is_authenticated:
+        if not user.is_authenticated:
             return False
 
-        # Адмін або менеджер бачить усіх
-        if getattr(user, "is_superuser", False) or getattr(user, "role", None) in ("manager", "admin"):
-            return True
+        return (
+            user == obj or
+            user.is_superuser or
+            getattr(user, "role", None) in ("manager", "admin")
+        )
 
-        # Власник бачить лише себе
-        return obj == user
+# # 20251115 Спрощую цей код, щоб мати його як приклад.
+# class IsOwnerOrManagerOrAdmin(BasePermission):
+#     """
+#     Дозволяє доступ до об'єкта лише:
+#     - власнику (user == obj)
+#     - менеджеру або адміну
+#     """
+#
+#     message = "У вас немає прав доступу до цього користувача."
+#
+#     def has_object_permission(self, request, view, obj):
+#         user = request.user
+#
+#         if not user or not user.is_authenticated:
+#             return False
+#
+#         # Адмін або менеджер бачить усіх
+#         if getattr(user, "is_superuser", False) or getattr(user, "role", None) in ("manager", "admin"):
+#             return True
+#
+#         # Власник бачить лише себе
+#         return obj == user
 
 
 
