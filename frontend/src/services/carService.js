@@ -38,9 +38,19 @@ const carService = {
     return apiService.get(urls.brands);
   },
 
+  // створення нового бренду
+  createBrand(data) {
+    return apiService.post(urls.brands, data);
+  },
+
   // список моделей
   getModels(params = {}) {
     return apiService.get(urls.models, { params });
+  },
+
+  // створення нової моделі
+  createModel(data) {
+    return apiService.post(urls.models, data);
   },
 };
 

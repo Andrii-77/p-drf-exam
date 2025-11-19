@@ -20,6 +20,13 @@ class CarModelModel(BaseModel):
     class Meta:
         db_table = 'car_models'
         ordering = ('model',)
+        #  20251119 Це вводиться, щоб не можна було створити дві моделі з однаковим model у рамках одного бренду.
+        constraints = [
+            models.UniqueConstraint(
+                fields=['brand', 'model'],
+                name='unique_model_per_brand'
+            )
+        ]
 
     brand = models.ForeignKey(CarBrandModel, on_delete=models.CASCADE, related_name='models')
     model = models.CharField(max_length=50,
