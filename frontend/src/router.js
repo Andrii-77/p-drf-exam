@@ -26,6 +26,10 @@ import {UserDetailsPage} from "./pages/UserDetailsPage";
 import {EditUserPage} from "./pages/EditUserPage";
 import {ChangePasswordPage} from "./pages/ChangePasswordPage";
 import {CreateBrandModelPage} from "./pages/CreateBrandModelPage";
+import {BrandsPage} from "./pages/BrandsPage";
+import {ModelsPage} from "./pages/ModelsPage";
+import {EditModelPage} from "./pages/EditModelPage";
+import {EditBrandPage} from "./pages/EditBrandPage";
 
 const router = createBrowserRouter([
     {
@@ -100,6 +104,10 @@ const router = createBrowserRouter([
                     {path: "users", element: <UsersComponent/>},
                     {path: "moderation", element: <ModerationPage/>},
                     {path: "create-brand-model", element: <CreateBrandModelPage/>},
+                    {path: "brands", element: <BrandsPage/>},
+                    {path: "brands/:id/edit", element: <EditBrandPage/>},
+                    {path: "models", element: <ModelsPage/>},
+                    {path: "models/:id/edit", element: <EditModelPage/>},
                 ],
             },
 

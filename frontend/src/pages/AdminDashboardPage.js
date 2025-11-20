@@ -73,6 +73,22 @@ const AdminDashboardPage = ({user}) => {
                 >
                     🏷️ Додати бренд / модель
                 </button>
+
+                {/* Усі бренди */}
+                <button
+                    onClick={() => navigate("/brands")}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg transition text-lg"
+                >
+                    📚 Усі бренди
+                </button>
+
+                {/* Усі моделі */}
+                <button
+                    onClick={() => navigate("/models")}
+                    className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg transition text-lg"
+                >
+                    🧩 Усі моделі
+                </button>
             </div>
         </div>
     );
