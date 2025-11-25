@@ -1,17 +1,46 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const ModerationPage = () => {
-  return (
-    <div className="p-10 min-h-[80vh] bg-gray-800 text-gray-100 flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-bold mb-6 text-orange-400">
-        🛠️ Модерація оголошень
-      </h1>
-      <p className="text-gray-300 text-center max-w-lg">
-        Тут з’явиться список авто, які очікують перевірки менеджером або адміністратором.
-        Ви зможете переглядати, схвалювати або відхиляти публікації.
-      </p>
-    </div>
-  );
+    const navigate = useNavigate();
+
+    return (
+        <div className="min-h-screen p-6 text-gray-100">
+            <h1 className="text-3xl font-bold mb-6 text-center">
+                Центр модерації
+            </h1>
+
+            <div className="flex flex-col items-center gap-4">
+
+                <button
+                    onClick={() => navigate("/moderation/support-requests")}
+                    className="px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-lg shadow text-white font-medium transition"
+                >
+                    📩 Support Requests
+                </button>
+
+            </div>
+        </div>
+    );
 };
 
 export { ModerationPage };
+
+
+// import React from "react";
+//
+// const ModerationPage = () => {
+//   return (
+//     <div className="p-10 min-h-[80vh] bg-gray-800 text-gray-100 flex flex-col items-center justify-center">
+//       <h1 className="text-3xl font-bold mb-6 text-orange-400">
+//         🛠️ Модерація оголошень
+//       </h1>
+//       <p className="text-gray-300 text-center max-w-lg">
+//         Тут з’явиться список авто, які очікують перевірки менеджером або адміністратором.
+//         Ви зможете переглядати, схвалювати або відхиляти публікації.
+//       </p>
+//     </div>
+//   );
+// };
+//
+// export { ModerationPage };

@@ -38,7 +38,7 @@ const ManagerDashboardPage = ({user}) => {
                     onClick={() => navigate("/moderation")}
                     className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg transition text-lg"
                 >
-                    🛠️ Модерація оголошень
+                    🛠️ Модерація
                 </button>
 
                 {/* 🔹 Додати бренд / модель */}

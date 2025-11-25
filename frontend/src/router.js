@@ -30,6 +30,7 @@ import {BrandsPage} from "./pages/BrandsPage";
 import {ModelsPage} from "./pages/ModelsPage";
 import {EditModelPage} from "./pages/EditModelPage";
 import {EditBrandPage} from "./pages/EditBrandPage";
+import {SupportRequestsPage} from "./pages/SupportRequestsPage";
 
 const router = createBrowserRouter([
     {
@@ -103,6 +104,7 @@ const router = createBrowserRouter([
                 children: [
                     {path: "users", element: <UsersComponent/>},
                     {path: "moderation", element: <ModerationPage/>},
+                    {path: "moderation/support-requests", element: <SupportRequestsPage/>},
                     {path: "create-brand-model", element: <CreateBrandModelPage/>},
                     {path: "brands", element: <BrandsPage/>},
                     {path: "brands/:id/edit", element: <EditBrandPage/>},
