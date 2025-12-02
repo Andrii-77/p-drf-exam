@@ -33,6 +33,11 @@ const supportService = {
         return apiService.patch(`${urls.support}/${id}`, {processed: true});
     },
 
+    // 🔹 Позначити як НЕ виконаний
+    markUnprocessed(id) {
+        return apiService.patch(`${urls.support}/${id}`, {processed: false});
+    },
+
     // 🔹 Отримати список брендів для фільтра
     getBrands() {
         return apiService.get(`${urls.support}/brands`);
