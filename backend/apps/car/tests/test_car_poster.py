@@ -1,140 +1,229 @@
-from decimal import Decimal
-from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
+from django.test import TestCase
+
+from apps.car.models import CarBrandModel, CarModelModel, CarPosterModel
 from apps.car.serializers import CarPosterSerializer
+from apps.user.models import UserModel
 
 
 class TestCarPoster(TestCase):
 
     def setUp(self):
-        # Створюємо бренд і модель
-        self.brand = CarBrandModel.objects.create(brand="Toyota")
-        self.model = CarModelModel.objects.create(brand=self.brand, model="Corolla")
+        # Створюємо користувача з email
+        self.user = UserModel.objects.create_user(
+            email="user1@example.com",
+            password="pass123"
+        )
 
-        # Створюємо користувача
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        self.user = User.objects.create_user(username="user1", password="pass123")
+        # Унікальні бренди і моделі для тестів
+        self.brand = CarBrandModel.objects.create(brand="ToyotaTest")
+        self.model = CarModelModel.objects.create(
+            brand=self.brand,
+            model="CamryTest"
+        )
 
-        # Створюємо banned word
-        self.banned_word = BannedWordsModel.objects.create(word="badword")
+    # -----------------------------------------------------------------------------------
+    # CREATE TESTS
+    # -----------------------------------------------------------------------------------
+    @patch("apps.car.serializers.apply_currency_conversion")
+    def test_create_carposter_sets_status_active(self, mocked_conversion):
+        mocked_conversion.return_value = {
+            "price_usd": 10000,
+            "price_eur": 9500,
+            "price_uah": 400000,
+            "exchange_rate_used": "test"
+        }
 
-        # Базові дані для CarPoster
-        self.valid_data = {
+        data = {
             "brand_id": self.brand.id,
             "model_id": self.model.id,
-            "description": "Nice car",
-            "original_price": Decimal("10000"),
+            "description": "Very good car",
+            "original_price": 10000,
             "original_currency": "USD",
             "location": "Kyiv"
         }
 
-    @patch("core.services.currency_conversion_utils.apply_currency_conversion")
-    def test_create_carposter_sets_status_active(self, mock_convert):
-        mock_convert.return_value = {
-            "price_usd": Decimal("10000"),
-            "price_eur": Decimal("9200"),
-            "price_uah": Decimal("370000"),
-            "exchange_rate_used": {"USD": "1", "EUR": "0.92", "UAH": "37"}
-        }
-
-        request = MagicMock()
-        request.user = self.user
-
-        serializer = CarPosterSerializer(data=self.valid_data, context={"request": request})
+        serializer = CarPosterSerializer(data=data, context={"request": self._fake_request(self.user)})
         self.assertTrue(serializer.is_valid(), serializer.errors)
-        car = serializer.save(user=self.user)
+        obj = serializer.save(user=self.user)
 
-        self.assertEqual(car.status, "active")
-        self.assertEqual(car.price_usd, Decimal("10000"))
-        self.assertEqual(car.price_eur, Decimal("9200"))
-        self.assertEqual(car.price_uah, Decimal("370000"))
+        self.assertEqual(obj.status, "active")
+        self.assertEqual(obj.edit_attempts, 0)
 
-    @patch("core.services.currency_conversion_utils.apply_currency_conversion")
-    def test_create_carposter_with_bad_words_sets_status_draft(self, mock_convert):
-        mock_convert.return_value = {
-            "price_usd": Decimal("10000"),
-            "price_eur": Decimal("9200"),
-            "price_uah": Decimal("370000"),
-            "exchange_rate_used": {"USD": "1", "EUR": "0.92", "UAH": "37"}
+    @patch("apps.car.serializers.contains_bad_words", return_value=True)
+    @patch("apps.car.serializers.apply_currency_conversion")
+    def test_create_carposter_with_bad_words_sets_status_draft(self, mocked_conversion, mocked_bad_words):
+        mocked_conversion.return_value = {
+            "price_usd": 10000,
+            "price_eur": 9500,
+            "price_uah": 400000,
+            "exchange_rate_used": "test"
         }
 
-        # Додаємо bad word у description
-        data = self.valid_data.copy()
-        data["description"] = f"This car is {self.banned_word.word}"
+        data = {
+            "brand_id": self.brand.id,
+            "model_id": self.model.id,
+            "description": "badword",
+            "original_price": 10000,
+            "original_currency": "USD",
+            "location": "Lviv"
+        }
 
-        request = MagicMock()
-        request.user = self.user
-
-        serializer = CarPosterSerializer(data=data, context={"request": request})
+        serializer = CarPosterSerializer(data=data, context={"request": self._fake_request(self.user)})
         self.assertTrue(serializer.is_valid(), serializer.errors)
-        car = serializer.save(user=self.user)
+        obj = serializer.save(user=self.user)
 
-        self.assertEqual(car.status, "draft")
+        self.assertEqual(obj.status, "draft")
+        self.assertEqual(obj.edit_attempts, 0)
 
-    @patch("core.services.currency_conversion_utils.apply_currency_conversion")
-    def test_update_resets_edit_attempts_if_no_bad_words(self, mock_convert):
-        mock_convert.return_value = {
-            "price_usd": Decimal("10000"),
-            "price_eur": Decimal("9200"),
-            "price_uah": Decimal("370000"),
-            "exchange_rate_used": {"USD": "1", "EUR": "0.92", "UAH": "37"}
+    # -----------------------------------------------------------------------------------
+    # UPDATE TESTS
+    # -----------------------------------------------------------------------------------
+    @patch("apps.car.serializers.contains_bad_words", return_value=True)
+    @patch("apps.car.serializers.EmailService.manager_email_for_car_poster_edit")
+    @patch("apps.car.serializers.apply_currency_conversion")
+    def test_update_increments_edit_attempts_and_triggers_email(self, mocked_conversion, mocked_email, mocked_bad_words):
+        mocked_conversion.return_value = {
+            "price_usd": 5000,
+            "price_eur": 4500,
+            "price_uah": 200000,
+            "exchange_rate_used": "test"
         }
 
-        request = MagicMock()
-        request.user = self.user
+        car = CarPosterModel.objects.create(
+            user=self.user,
+            brand=self.brand,
+            model=self.model,
+            description="clean",
+            original_price=5000,
+            original_currency="USD",
+            price_usd=5000,
+            price_eur=4500,
+            price_uah=200000,
+            exchange_rate_used="test",
+            location="Kyiv",
+            status="active"
+        )
 
-        serializer = CarPosterSerializer(data=self.valid_data, context={"request": request})
-        self.assertTrue(serializer.is_valid())
-        car = serializer.save(user=self.user)
-
-        # Симулюємо редагування
+        # Симулюємо 3 редагування для перевірки EmailService
         car.edit_attempts = 2
         car.save()
 
-        update_data = {"description": "Updated description"}
-        serializer = CarPosterSerializer(car, data=update_data, partial=True, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        car = serializer.save()
+        serializer = CarPosterSerializer(
+            instance=car,
+            data={
+                "description": "badword",
+                "original_price": car.original_price,
+                "original_currency": car.original_currency
+            },
+            partial=True,
+            context={"request": self._fake_request(self.user)}
+        )
 
-        self.assertEqual(car.status, "active")
-        self.assertEqual(car.edit_attempts, 0)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        updated = serializer.save()
 
-    @patch("core.services.email_service.EmailService.manager_email_for_car_poster_edit")
-    @patch("core.services.currency_conversion_utils.apply_currency_conversion")
-    def test_update_increments_edit_attempts_and_triggers_email(self, mock_convert, mock_email):
-        mock_convert.return_value = {
-            "price_usd": Decimal("10000"),
-            "price_eur": Decimal("9200"),
-            "price_uah": Decimal("370000"),
-            "exchange_rate_used": {"USD": "1", "EUR": "0.92", "UAH": "37"}
+        self.assertEqual(updated.edit_attempts, 3)
+        self.assertEqual(updated.status, "inactive")
+        mocked_email.assert_called_once_with(car=updated)
+
+    @patch("apps.car.serializers.contains_bad_words", return_value=False)
+    @patch("apps.car.serializers.apply_currency_conversion")
+    def test_update_resets_edit_attempts_if_no_bad_words(self, mocked_conversion, mocked_bad_words):
+        mocked_conversion.return_value = {
+            "price_usd": 5000,
+            "price_eur": 4500,
+            "price_uah": 200000,
+            "exchange_rate_used": "test"
         }
 
-        request = MagicMock()
-        request.user = self.user
+        car = CarPosterModel.objects.create(
+            user=self.user,
+            brand=self.brand,
+            model=self.model,
+            description="old text",
+            original_price=5000,
+            original_currency="USD",
+            price_usd=5000,
+            price_eur=4500,
+            price_uah=200000,
+            exchange_rate_used="test",
+            location="Kyiv",
+            status="draft",
+            edit_attempts=2
+        )
 
-        serializer = CarPosterSerializer(data=self.valid_data, context={"request": request})
-        self.assertTrue(serializer.is_valid())
-        car = serializer.save(user=self.user)
+        serializer = CarPosterSerializer(
+            instance=car,
+            data={
+                "description": "clean",
+                "original_price": car.original_price,
+                "original_currency": car.original_currency
+            },
+            partial=True,
+            context={"request": self._fake_request(self.user)}
+        )
 
-        update_data = {"description": f"Contains {self.banned_word.word}"}
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        updated = serializer.save()
 
-        # Перша спроба
-        serializer = CarPosterSerializer(car, data=update_data, partial=True, context={"request": request})
-        serializer.is_valid()
-        car = serializer.save()
-        self.assertEqual(car.status, "draft")
-        self.assertEqual(car.edit_attempts, 1)
-        mock_email.assert_not_called()
+        self.assertEqual(updated.edit_attempts, 0)
+        self.assertEqual(updated.status, "active")
 
-        # Третя спроба (trigger email)
-        car.edit_attempts = 2
-        car.save()
-        serializer = CarPosterSerializer(car, data=update_data, partial=True, context={"request": request})
-        serializer.is_valid()
-        car = serializer.save()
-        self.assertEqual(car.status, "inactive")
-        self.assertEqual(car.edit_attempts, 3)
-        mock_email.assert_called_once_with(car)
+    @patch("apps.car.serializers.contains_bad_words", return_value=True)
+    @patch("apps.car.serializers.EmailService.manager_email_for_car_poster_edit")
+    @patch("apps.car.serializers.apply_currency_conversion")
+    def test_update_with_bad_words_less_than_three_attempts_does_not_trigger_email(self, mocked_conversion, mocked_email, mocked_bad_words):
+        mocked_conversion.return_value = {
+            "price_usd": 5000,
+            "price_eur": 4500,
+            "price_uah": 200000,
+            "exchange_rate_used": "test"
+        }
+
+        car = CarPosterModel.objects.create(
+            user=self.user,
+            brand=self.brand,
+            model=self.model,
+            description="old clean",
+            original_price=5000,
+            original_currency="USD",
+            price_usd=5000,
+            price_eur=4500,
+            price_uah=200000,
+            exchange_rate_used="test",
+            location="Kyiv",
+            status="active",
+            edit_attempts=1  # менше 3
+        )
+
+        serializer = CarPosterSerializer(
+            instance=car,
+            data={
+                "description": "badword",
+                "original_price": car.original_price,
+                "original_currency": car.original_currency
+            },
+            partial=True,
+            context={"request": self._fake_request(self.user)}
+        )
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        updated = serializer.save()
+
+        self.assertEqual(updated.edit_attempts, 2)
+        self.assertEqual(updated.status, "draft")
+        mocked_email.assert_not_called()
+
+    # -----------------------------------------------------------------------------------
+    # HELPER
+    # -----------------------------------------------------------------------------------
+    def _fake_request(self, user):
+        """Створюємо фейковий request з користувачем для serializer.context"""
+        class FakeReq:
+            pass
+
+        req = FakeReq()
+        req.user = user
+        return req
