@@ -12,20 +12,38 @@ class TestBannedWordsViews(APITestCase):
     def setUp(self):
         # створюємо користувачів
         self.staff_user = UserModel.objects.create_user(
-            username="staff", password="pass123", is_staff=True
+            email="staff@example.com",
+            password="pass123",
+            is_staff=True
         )
         self.normal_user = UserModel.objects.create_user(
-            username="user1", password="pass123"
+            email="user1@example.com",
+            password="pass123"
         )
-        # створюємо початкове banned слово
         self.banned_word = BannedWordsModel.objects.create(word="badword")
 
-    def test_list_banned_words(self):
+    # ---------- LIST ----------
+    def test_list_banned_words_allowed_for_staff(self):
+        self.client.force_authenticate(user=self.staff_user)
         url = reverse("bannedwordslistcreateview")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(any(w["word"] == "badword" for w in response.json()))
 
+        results = response.json()["data"]  # 👈 тут беремо "data"
+        self.assertTrue(any(w["word"] == "badword" for w in results))
+
+    def test_list_banned_words_denied_for_normal_user(self):
+        self.client.force_authenticate(user=self.normal_user)
+        url = reverse("bannedwordslistcreateview")
+        response = self.client.get(url)
+        self.assertIn(response.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_401_UNAUTHORIZED])
+
+    def test_list_banned_words_denied_for_anonymous(self):
+        url = reverse("bannedwordslistcreateview")
+        response = self.client.get(url)
+        self.assertIn(response.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_401_UNAUTHORIZED])
+
+    # ---------- CREATE ----------
     def test_create_banned_word_allowed_for_staff(self):
         self.client.force_authenticate(user=self.staff_user)
         url = reverse("bannedwordslistcreateview")
@@ -41,12 +59,21 @@ class TestBannedWordsViews(APITestCase):
         response = self.client.post(url, data)
         self.assertIn(response.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_401_UNAUTHORIZED])
 
-    def test_retrieve_banned_word(self):
+    # ---------- RETRIEVE ----------
+    def test_retrieve_banned_word_allowed_for_staff(self):
+        self.client.force_authenticate(user=self.staff_user)
         url = reverse("bannedwordsretrieveupdatedestroyview", args=[self.banned_word.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["word"], self.banned_word.word)
 
+    def test_retrieve_banned_word_denied_for_normal_user(self):
+        self.client.force_authenticate(user=self.normal_user)
+        url = reverse("bannedwordsretrieveupdatedestroyview", args=[self.banned_word.id])
+        response = self.client.get(url)
+        self.assertIn(response.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_401_UNAUTHORIZED])
+
+    # ---------- UPDATE ----------
     def test_update_banned_word_allowed_for_staff(self):
         self.client.force_authenticate(user=self.staff_user)
         url = reverse("bannedwordsretrieveupdatedestroyview", args=[self.banned_word.id])
@@ -56,9 +83,23 @@ class TestBannedWordsViews(APITestCase):
         self.banned_word.refresh_from_db()
         self.assertEqual(self.banned_word.word, "updatedword")
 
+    def test_update_banned_word_denied_for_normal_user(self):
+        self.client.force_authenticate(user=self.normal_user)
+        url = reverse("bannedwordsretrieveupdatedestroyview", args=[self.banned_word.id])
+        data = {"word": "updatedword"}
+        response = self.client.put(url, data)
+        self.assertIn(response.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_401_UNAUTHORIZED])
+
+    # ---------- DELETE ----------
     def test_delete_banned_word_allowed_for_staff(self):
         self.client.force_authenticate(user=self.staff_user)
         url = reverse("bannedwordsretrieveupdatedestroyview", args=[self.banned_word.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(BannedWordsModel.objects.filter(id=self.banned_word.id).exists())
+
+    def test_delete_banned_word_denied_for_normal_user(self):
+        self.client.force_authenticate(user=self.normal_user)
+        url = reverse("bannedwordsretrieveupdatedestroyview", args=[self.banned_word.id])
+        response = self.client.delete(url)
+        self.assertIn(response.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_401_UNAUTHORIZED])
