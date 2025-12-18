@@ -131,7 +131,7 @@ const SupportRequestsPage = () => {
                 ← Назад
             </button>
 
-            <h1 className="text-3xl font-bold mb-6 text-center">Support Запити</h1>
+            <h1 className="text-3xl font-bold mb-6 text-center">Запити</h1>
 
             {/* Фільтри */}
             <div className="flex flex-col md:flex-row gap-6 justify-center mb-6">

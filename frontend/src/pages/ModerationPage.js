@@ -17,7 +17,7 @@ const ModerationPage = () => {
                     onClick={() => navigate("/moderation/support-requests")}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg transition text-lg"
                 >
-                    📩 Support Requests
+                    📩 Запити про відсутні бренди/моделі
                 </button>
 
             </div>
