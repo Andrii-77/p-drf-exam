@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
 
@@ -76,20 +76,3 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(new_password)
         user.save(update_fields=['password'])
         return user
-
-
-
-# from django.contrib.auth import get_user_model
-#
-# from rest_framework import serializers
-#
-# UserModel = get_user_model()
-#
-#
-# class EmailSerializer(serializers.Serializer):
-#     email = serializers.EmailField()
-#
-# class PasswordSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = UserModel
-#         fields = ['password']

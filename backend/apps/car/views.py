@@ -1,9 +1,7 @@
-from django.db.models import Q
-
 from rest_framework import generics, status
 from rest_framework.filters import OrderingFilter
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from core.services.banned_words_service import contains_bad_words
@@ -12,7 +10,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from apps.car.filter import CarFilter
 from apps.car.models import BannedWordsModel, CarBrandModel, CarModelModel, CarPosterModel
 from apps.car.serializers import BannedWordsSerializer, CarBrandSerializer, CarModelSerializer, CarPosterSerializer
-from apps.statistic.models import CarViewModel
 from apps.statistic.services import register_car_view
 from apps.user.mixins import ReadOnlyOrManagerAdminMixin
 from apps.user.permissions import EditCarPosterPermission
@@ -64,28 +61,6 @@ class CarListCreateView(generics.ListAPIView):
             return CarPosterModel.objects.all()
         return CarPosterModel.objects.filter(status='active')
 
-# class CarListCreateView(generics.ListAPIView):
-#     # тепер тут створювати cars ми не можемо
-#     serializer_class = CarPosterSerializer
-#     # queryset = CarPosterModel.objects.all()
-#     filterset_class = CarFilter
-#     permission_classes = (AllowAny,)
-#
-#     # permission_classes = (IsAuthenticated,)
-#
-#     def get_queryset(self):
-#         user = self.request.user
-#
-#         # Менеджер або адміністратор бачать все
-#         if user.is_authenticated and (
-#                 user.is_staff or getattr(user, 'role', None) in ['manager', 'admin']
-#         ):
-#             return CarPosterModel.objects.all()
-#
-#         # Для всіх інших — лише активні
-#         return CarPosterModel.objects.filter(status='active')
-
-
 class CarRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = CarPosterModel.objects.all()
     serializer_class = CarPosterSerializer
@@ -95,17 +70,6 @@ class CarRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
-
-    # def retrieve(self, request, *args, **kwargs):
-    #     response = super().retrieve(request, *args, **kwargs)
-    #
-    #     car = self.get_object()
-    #
-    #     # Не записуємо перегляд, якщо користувач — власник
-    #     if not request.user.is_authenticated or request.user != car.user:
-    #         CarViewModel.objects.create(car=car)
-    #
-    #     return response
 
     def retrieve(self, request, *args, **kwargs):
         car = self.get_object()
@@ -180,30 +144,6 @@ class CarRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         response_data = self.get_serializer(instance).data
         response_data['message'] = message
         return Response(response_data, status=status.HTTP_200_OK)
-
-
-# # 20251015 Даю новий код для update
-#     def update(self, request, *args, **kwargs):
-#         partial = kwargs.pop('partial', False)
-#         instance = self.get_object()
-#         serializer = self.get_serializer(instance, data=request.data, partial=partial)
-#         serializer.is_valid(raise_exception=True)
-#         instance = serializer.save()
-#
-#         if contains_bad_words(instance.description):
-#             if instance.edit_attempts >= 3:
-#                 message = (
-#                     "Закінчились три спроби редагування опису. Оголошення передано менеджеру на перевірку."
-#                 )
-#             else:
-#                 message = "Опис містить нецензурну лексику. Оголошення збережено зі статусом 'чернетка'."
-#         else:
-#             message = "Опис оновлено. Оголошення активоване."
-#
-#         response_data = self.get_serializer(instance).data
-#         response_data['message'] = message
-#
-#         return Response(response_data, status=status.HTTP_200_OK)
 
 
 class BannedWordsListCreateView(ListCreateAPIView):

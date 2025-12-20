@@ -12,8 +12,6 @@ User = get_user_model()
 class CarViewModel(BaseModel):
     car = models.ForeignKey(CarPosterModel, on_delete=models.CASCADE, related_name='views')
     timestamp = models.DateTimeField(default=timezone.now)
-    # Це змінюю, бо не підходить для тестів.
-    # timestamp = models.DateTimeField(auto_now_add=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     session_key = models.CharField(max_length=40, null=True, blank=True) # В майбутньому це поле можна використати при аналітиці.
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)

@@ -61,33 +61,6 @@ class EditCarPosterPermission(BasePermission):
 
         raise PermissionDenied("У вас немає прав змінювати або видаляти це оголошення.")
 
-    # """
-    # - Перегляд дозволений всім.
-    # - Редагування/видалення дозволене лише власнику, менеджеру або адміну.
-    # """
-    #
-    # def has_object_permission(self, request, view, obj):
-    #     # Перегляд дозволяємо всім (навіть неавторизованим, якщо інше не заборонено)
-    #     if request.method in ('GET', 'HEAD', 'OPTIONS'):
-    #         return True
-    #
-    #     # Для всього іншого — перевірка прав
-    #     user = request.user
-    #
-    #     if not user.is_authenticated:
-    #         raise PermissionDenied("Неавторизовані користувачі не можуть змінювати дані.")
-    #
-    #     if user == obj.user and obj.status != 'inactive':
-    #         return True
-    #
-    #     if user.is_staff:
-    #         return True
-    #
-    #     if hasattr(user, 'role') and user.role in ['manager', 'admin']:
-    #         return True
-    #
-    #     raise PermissionDenied("У вас немає прав змінювати або видаляти це оголошення.")
-
 
 class IsOwnerOrManagerOrAdmin(BasePermission):
     message = "У вас немає прав доступу до цього користувача."
@@ -99,80 +72,10 @@ class IsOwnerOrManagerOrAdmin(BasePermission):
             return False
 
         return (
-            user == obj or
-            user.is_superuser or
-            getattr(user, "role", None) in ("manager", "admin")
+                user == obj or
+                user.is_superuser or
+                getattr(user, "role", None) in ("manager", "admin")
         )
-
-# # 20251115 Спрощую цей код, щоб мати його як приклад.
-# class IsOwnerOrManagerOrAdmin(BasePermission):
-#     """
-#     Дозволяє доступ до об'єкта лише:
-#     - власнику (user == obj)
-#     - менеджеру або адміну
-#     """
-#
-#     message = "У вас немає прав доступу до цього користувача."
-#
-#     def has_object_permission(self, request, view, obj):
-#         user = request.user
-#
-#         if not user or not user.is_authenticated:
-#             return False
-#
-#         # Адмін або менеджер бачить усіх
-#         if getattr(user, "is_superuser", False) or getattr(user, "role", None) in ("manager", "admin"):
-#             return True
-#
-#         # Власник бачить лише себе
-#         return obj == user
-
-
-
-# # 20251105 Змінюю на ще кращу версію.
-# class IsOwnerOrManagerOrAdmin(BasePermission):
-#     """
-#     Дозволяє зміну/видалення лише власнику, менеджеру або адміну.
-#     """
-#
-#     def has_object_permission(self, request, view, obj):
-#         user = request.user
-#
-#         if not user or not user.is_authenticated:
-#             return False
-#
-#         # Якщо адміністратор або менеджер
-#         if getattr(user, "is_superuser", False) or getattr(user, "role", None) in ("manager", "admin"):
-#             return True
-#
-#         # Якщо власник (перевірка, що користувач редагує сам себе)
-#         if obj == user:
-#             return True
-#
-#         return False
-
-
-# # 20251105 Роблю маленькі зміни по пораді ШІ, цей код коментую, новий зверху.
-# class IsOwnerOrManagerOrAdmin(BasePermission):
-#     """
-#     Дозволяє зміну/видалення лише власнику, менеджеру або адміну.
-#     """
-#
-#     def has_object_permission(self, request, view, obj):
-#         user = request.user
-#
-#         if not user.is_authenticated:
-#             raise PermissionDenied("Неавторизовані користувачі не мають доступу.")
-#
-#         # Перевірка ролей або статусу
-#         if user.is_superuser or getattr(user, "role") in ("manager", "admin"):
-#             return True
-#
-#         # Власник (наприклад, user переглядає/редагує свої дані)
-#         if obj == user:
-#             return True  # власник акаунта
-#
-#         raise PermissionDenied("У вас немає прав доступу до цього користувача.")
 
 
 class HasPremiumAccessPermission(BasePermission):
@@ -195,15 +98,3 @@ class IsManagerOrAdmin(BasePermission):
                     request.user.is_staff or getattr(request.user, 'role', None) in ['manager', 'admin']
             )
         )
-
-# Ще один варіант IsManagerOrAdmin, але завжди буде видавати одне повідомлення і для неавторизованих
-# і для авторизованих але без права доступу:
-# class IsManagerOrAdmin(BasePermission):
-#     message = "У вас немає прав доступу."
-#
-#     def has_permission(self, request, view):
-#         return bool(
-#             getattr(request.user, 'is_staff', False) or
-#             getattr(request.user, 'role', None) in ['manager', 'admin']
-#         )
-# Але це НЕ ДАСТЬ ЗРОЗУМІТИ чи треба користувача залогінити, чи просто показати повідомлення про відсутність прав.

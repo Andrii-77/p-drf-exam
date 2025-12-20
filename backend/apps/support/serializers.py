@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from ..car.models import CarBrandModel, CarModelModel
 from .models import SupportRequestModel
 
 
@@ -73,17 +72,6 @@ class SupportRequestSerializer(serializers.ModelSerializer):
                 )
 
         return attrs
-
-    # def validate(self, attrs):
-    #     """
-    #     Додаткова валідація:
-    #     - якщо type == "model", то поле brand обов'язкове
-    #     """
-    #     if attrs.get("type") == "model" and not attrs.get("brand"):
-    #         raise serializers.ValidationError(
-    #             {"brand": "Для моделі потрібно вказати бренд."}
-    #         )
-    #     return attrs
 
 class SupportRequestProcessSerializer(serializers.ModelSerializer):
     """Серіалізатор для оновлення тільки processed"""

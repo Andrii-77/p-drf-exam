@@ -54,14 +54,7 @@ class CarPosterModel(BaseModel):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='cars')
     brand = models.ForeignKey(CarBrandModel, on_delete=models.PROTECT)
     model = models.ForeignKey(CarModelModel, on_delete=models.PROTECT)
-    # brand = models.CharField(max_length=50)
-    # model = models.CharField(max_length=50)
     description = models.TextField()
-    # price = models.DecimalField(max_digits=10, decimal_places=2,
-    #                            validators=[V.MinValueValidator(1), V.MaxValueValidator(99999999.99)])
-    # currency = models.CharField(max_length=3, choices=[('USD', 'USD'), ('EUR', 'EUR'), ('UAH', 'UAH')])
-    # currency = models.CharField(max_length=3, choices=CurrencyChoices.choices, default=CurrencyChoices.USD)
-
     original_price = models.DecimalField(max_digits=10, decimal_places=2,
                                          validators=[V.MinValueValidator(1), V.MaxValueValidator(99999999.99)])
     original_currency = models.CharField(max_length=3, choices=CurrencyChoices.choices)

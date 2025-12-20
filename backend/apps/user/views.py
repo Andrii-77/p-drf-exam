@@ -6,15 +6,12 @@ from django.template.loader import get_template
 
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.pagination import PagePagination
 from core.services.banned_words_service import contains_bad_words
-from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.car.filter import CarFilter
 from apps.car.models import CarPosterModel
@@ -49,13 +46,6 @@ class UserListCreateView(ListCreateAPIView):
     filterset_class = UserFilter
     ordering_fields = ["id", "email", "role", "is_active", "account_type"]
     ordering = ["-id"]
-
-
-# # 20251028 Оновлюю цей клас, щоб на фронтенді була можливість сортування і фільтрації
-# class UserListCreateView(ListCreateAPIView):
-#     queryset = UserModel.objects.all()
-#     serializer_class = UserSerializer
-#     permission_classes = [AllowAny]
 
 
 class BlockUserView(GenericAPIView):
@@ -278,128 +268,6 @@ class UserAddCarPosterView(generics.ListCreateAPIView):
         response.data['message'] = message
         return response
 
-# 20251115 Змінюю def create, щоб з бекенду приходили дружні повідомлення у випадку помилок.
-    # def create(self, request, *args, **kwargs):
-    #     """
-    #     Після створення додаємо повідомлення залежно від опису авто
-    #     """
-    #     response = super().create(request, *args, **kwargs)
-    #     instance = CarPosterModel.objects.get(pk=response.data['id'])
-    #
-    #     if contains_bad_words(instance.description):
-    #         message = "Опис створеного оголошення містить нецензурну лексику. Оголошення збережено зі статусом 'чернетка'."
-    #     else:
-    #         message = "Оголошення успішно створене та активоване."
-    #
-    #     response.data['message'] = message
-    #     return response
-
-
-# # 20251011 Змінюю цей клас, щоб була підтримка фільтрів
-# class UserAddCarPosterView(generics.ListCreateAPIView):
-#     serializer_class = CarPosterSerializer
-#     permission_classes = [IsAuthenticated]
-#     pagination_class = PagePagination  # твоя кастомна пагінація
-#     filterset_class = CarFilter
-#
-#     def get_queryset(self):
-#         user_id = self.kwargs.get('pk')  # або як ти називаєш параметр у URL
-#         if self.request.user.id != int(user_id):
-#             raise PermissionDenied("Ви не можете переглядати авто іншого користувача.")
-#         # Фільтруємо машини конкретного користувача
-#         return CarPosterModel.objects.filter(user_id=user_id)
-#
-#     def perform_create(self, serializer):
-#         user_id = self.kwargs.get('pk')
-#         if self.request.user.id != int(user_id):
-#             raise PermissionDenied("Ви не можете створювати оголошення від імені іншого користувача.")
-#
-#         user = UserModel.objects.get(pk=user_id)
-#         if user.account_type == 'basic' and user.cars.count() >= 1:
-#             raise PermissionDenied("Користувач з базовим акаунтом може мати лише одне оголошення.")
-#
-#         instance = serializer.save(user=user)
-#
-#         # Перевірка опису на погані слова
-#         if contains_bad_words(instance.description):
-#             instance.status = 'draft'  # або як там статус чорновика називається
-#             instance.save()
-#
-#     def create(self, request, *args, **kwargs):
-#         response = super().create(request, *args, **kwargs)
-#         instance = CarPosterModel.objects.get(pk=response.data['id'])
-#         if contains_bad_words(instance.description):
-#             message = "Опис створеного оголошення містить нецензурну лексику. Оголошення збережено зі статусом 'чорновик'."
-#         else:
-#             message = "Оголошення успішно створене та активоване."
-#
-#         response.data['message'] = message
-#         return response
-
-
-# class UserAddCarPosterView(GenericAPIView):
-#     queryset = UserModel.objects.all()
-#     permission_classes = [IsAuthenticated]
-#     pagination_class = PagePagination  # призначаємо кастомну пагінацію
-#
-#     def get(self, request, *args, **kwargs):
-#         user = self.get_object()
-#         if self.request.user != user:
-#             raise PermissionDenied("Ви не можете переглядати авто іншого користувача.")
-#
-#         cars = user.cars.all()
-#
-#         # застосовуємо пагінацію до queryset
-#         page = self.paginate_queryset(cars)
-#         if page is not None:
-#             serializer = CarPosterSerializer(page, many=True, context={'request': request})
-#             return self.get_paginated_response(serializer.data)
-#
-#         # якщо пагінація не застосовується, повертаємо все
-#         serializer = CarPosterSerializer(cars, many=True, context={'request': request})
-#         return Response(serializer.data, status=200)
-#
-#     # def get(self, request, *args, **kwargs):
-#     #     user = self.get_object()
-#     #     if self.request.user != user:
-#     #         raise PermissionDenied("Ви не можете переглядати авто іншого користувача.")
-#     #
-#     #     cars = user.cars.all()  # тут уже всі машини користувача
-#     #     serializer = CarPosterSerializer(cars, many=True, context={'request': request})
-#     #     return Response(serializer.data, status=status.HTTP_200_OK)
-#
-#
-#     def post(self, *args, **kwargs):
-#         user = self.get_object()
-#         data = self.request.data
-#         if user.account_type == 'basic' and user.cars.count() >= 1:
-#             raise PermissionDenied("Користувач з базовим акаунтом може мати лише одне оголошення.")
-#         if self.request.user != user:
-#             raise PermissionDenied("Ви не можете створювати оголошення від імені іншого користувача.")
-#         serializer = CarPosterSerializer(data=data)
-#         serializer.is_valid(raise_exception=True)
-#         # serializer.save(user=user)
-#         # user_serializer = UserSerializer(user)
-#         # return Response(user_serializer.data, status.HTTP_201_CREATED)
-#         instance = serializer.save(user=user)
-#
-#         # Додаємо повідомлення в залежності від опису
-#         if contains_bad_words(instance.description):
-#             message = "Опис створеного оголошення містить нецензурну лексику. Оголошення збережено зі статусом 'чорновик'."
-#         else:
-#             message = "Оголошення успішно створене та активоване."
-#
-#         # user_serializer = UserSerializer(user)
-#         # response_data = user_serializer.data
-#         # response_data['message'] = message
-#         # return Response(response_data, status=status.HTTP_201_CREATED)
-#         # Тут повідомлення йде після опису юзері і його списку авто.
-#
-#         car_data = CarPosterSerializer(instance).data
-#         car_data['message'] = message
-#         return Response(car_data, status=status.HTTP_201_CREATED)
-#         # Тут виводиться тільки створене авто і в кінці йде повідомлення до цього оголошення.
-
 
 class SendEmailTestView(GenericAPIView):
     permission_classes = (AllowAny,)
@@ -415,17 +283,6 @@ class SendEmailTestView(GenericAPIView):
         msg.attach_alternative(html_content, "text/html")
         msg.send()
         return Response({'message': 'Email sent!'}, status.HTTP_200_OK)
-
-
-# 20251101 Змінюю, щоб адмін і менеджер могли редагувати role, account_type, is_active.
-# class UserDetailView(RetrieveUpdateDestroyAPIView):
-#     queryset = UserModel.objects.all()
-#     serializer_class = UserSerializer
-#
-#     def get_permissions(self):
-#         if self.request.method == 'GET':
-#             return [AllowAny()]  # будь-хто може побачити юзера
-#         return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]  # редагувати/видалити — тільки з правами
 
 
 class UserDetailView(RetrieveUpdateDestroyAPIView):
@@ -514,107 +371,6 @@ class UserDetailView(RetrieveUpdateDestroyAPIView):
                 self.extra_message = (
                     f"Роль змінено з 'seller' на 'buyer'. Деактивовано {deactivated_count} оголошень."
                 )
-
-
-# # 20251115 Ще раз оновлюю цей клас, щоб менеджер змінював тільки ролі покупець/продавець, а адмін міг змінювати всі ролі.
-# class UserDetailView(RetrieveUpdateDestroyAPIView):
-#     queryset = UserModel.objects.all()
-#     serializer_class = UserSerializer
-#     permission_classes = [IsAuthenticated, IsOwnerOrManagerOrAdmin]
-#
-#     def get_serializer_class(self):
-#         """Визначає, який серіалізатор використовувати."""
-#         user = self.request.user
-#         if user.is_authenticated and getattr(user, "role", None) in ["manager", "admin"]:
-#             return AdminUserUpdateSerializer
-#         return UserSerializer
-#
-#     def update(self, request, *args, **kwargs):
-#         """Контролює, які поля можна змінювати користувачу залежно від його ролі."""
-#         instance = self.get_object()
-#         current_user = request.user
-#         data = request.data.copy()
-#
-#         # --- 🔒 Якщо користувач звичайний (buyer/seller)
-#         if current_user.role in ["buyer", "seller"]:
-#             # ❌ Може змінювати лише свій профіль
-#             if instance.id != current_user.id:
-#                 return Response(
-#                     {"detail": "Ви можете редагувати лише власний профіль."},
-#                     status=status.HTTP_403_FORBIDDEN,
-#                 )
-#
-#             # ✅ Дозволяємо змінювати лише 'role' (buyer/seller) і 'profile'
-#             allowed_fields = ["role", "profile"]
-#             for field in list(data.keys()):
-#                 if field not in allowed_fields:
-#                     data.pop(field, None)
-#
-#             # ❌ Забороняємо змінювати роль на admin або manager
-#             new_role = data.get("role")
-#             if new_role and new_role not in ["buyer", "seller"]:
-#                 return Response(
-#                     {"detail": "Ви можете змінювати роль лише між buyer та seller."},
-#                     status=status.HTTP_403_FORBIDDEN,
-#                 )
-#
-#         # --- 🔓 Якщо менеджер або адмін — дозволено все
-#         serializer_class = self.get_serializer_class()
-#         serializer = serializer_class(instance, data=data, partial=True)
-#         serializer.is_valid(raise_exception=True)
-#
-#         # === Викликаємо стандартний perform_update() з нашою логікою деактивації
-#         self.perform_update(serializer)
-#
-#         response_data = serializer.data
-#
-#         # Додаємо додаткове повідомлення про деактивацію, якщо воно є
-#         extra_message = getattr(self, "extra_message", None)
-#         if extra_message:
-#             response_data["message"] = extra_message
-#         else:
-#             response_data["message"] = "Дані користувача успішно оновлено."
-#
-#         return Response(response_data)
-#
-#     def perform_update(self, serializer):
-#         user_before = self.get_object()
-#         user_after = serializer.save()
-#
-#         # Деактивація авто, якщо роль змінилася з seller на buyer
-#         self.extra_message = None
-#         if user_before.role == "seller" and user_after.role == "buyer":
-#             from apps.car.models import CarPosterModel
-#
-#             # знаходимо активні оголошення користувача
-#             active_cars = CarPosterModel.objects.filter(user=user_after, status="active")
-#
-#             # оновлюємо статус на draft
-#             deactivated_count = active_cars.update(status="draft")
-#             if deactivated_count:
-#                 self.extra_message = f"Роль змінено з 'seller' на 'buyer'. Деактивовано {deactivated_count} оголошень."
-
-# # 20251111 Оновлюю цей клас, щоб можна було змінювати ролі при редагуванні профілю.
-# class UserDetailView(RetrieveUpdateDestroyAPIView):
-#     queryset = UserModel.objects.all()
-#     serializer_class = UserSerializer
-#     permission_classes = [IsAuthenticated, IsOwnerOrManagerOrAdmin]  # ✅ тепер для GET також
-#
-# # # 20251105 Коментую код знизу, щоб доступ до даних користувача були тільки по дозволах, а не кожному.
-# #     def get_permissions(self):
-# #         if self.request.method == 'GET':
-# #             return [AllowAny()]
-# #         return [IsAuthenticated(), IsOwnerOrManagerOrAdmin()]
-#
-#     def get_serializer_class(self):
-#         """
-#         Менеджер або адміністратор можуть змінювати role, account_type і is_active.
-#         Власник — лише свої особисті дані.
-#         """
-#         user = self.request.user
-#         if user.is_authenticated and getattr(user, "role", None) in ["manager", "admin"]:
-#             return AdminUserUpdateSerializer
-#         return UserSerializer
 
 
 class CurrentUserView(APIView):

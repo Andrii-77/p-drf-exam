@@ -50,47 +50,6 @@ def get_average_prices(car: CarPosterModel):
     }
 
 
-
-# def get_average_prices(car: CarPosterModel):
-#     """Повертає середні ціни по регіону та по Україні в USD, EUR, UAH"""
-#
-#     region_queryset = CarPosterModel.objects.filter(
-#         brand=car.brand,
-#         model=car.model,
-#         location=car.location,
-#     ).exclude(id=car.id)
-#
-#     country_queryset = CarPosterModel.objects.filter(
-#         brand=car.brand,
-#         model=car.model,
-#     ).exclude(id=car.id)
-#
-#     region_avg = region_queryset.aggregate(
-#         usd=Avg('price_usd'),
-#         eur=Avg('price_eur'),
-#         uah=Avg('price_uah'),
-#     )
-#
-#     country_avg = country_queryset.aggregate(
-#         usd=Avg('price_usd'),
-#         eur=Avg('price_eur'),
-#         uah=Avg('price_uah'),
-#     )
-#
-#     return {
-#         "region_average_price": {
-#             "usd": round(region_avg["usd"], 2),
-#             "eur": round(region_avg["eur"], 2),
-#             "uah": round(region_avg["uah"], 2),
-#         },
-#         "country_average_price": {
-#             "usd": round(country_avg["usd"], 2),
-#             "eur": round(country_avg["eur"], 2),
-#             "uah": round(country_avg["uah"], 2),
-#         },
-#     }
-
-
 # Щоб уникати повторних звернень до БД
 def get_view_counts(car):
     now_ts = timezone.now()
@@ -135,7 +94,6 @@ def can_register_view(car, ip_address=None, session_key=None, user=None):
     elif ip_address:
         filters['ip_address'] = ip_address
     else:
-        # return False  # немає способу ідентифікувати — не реєструємо
         return True  # немає жодної ідентифікації — але дозволяємо реєстрацію (перегляд унікальний)
 
     return not CarViewModel.objects.filter(**filters).exists()
@@ -148,13 +106,6 @@ def register_car_view(request, car):
     """
     user = request.user if request.user.is_authenticated else None
     ip_address = get_client_ip(request) or "unknown"
-    # session_key = request.session.session_key
-    #
-    # if not session_key:
-    #     request.session.create()
-    #     session_key = request.session.session_key
-    # session_key = session_key or "anonymous"
-    # даю далі коротший код, тому це коментую.
 
     # Сесія
     session = request.session

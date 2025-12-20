@@ -1,9 +1,6 @@
 from django.test import TestCase
 
-from rest_framework.exceptions import ValidationError
-
 from apps.car.models import CarBrandModel, CarModelModel
-from apps.support.models import SupportRequestModel
 from apps.support.serializers import SupportRequestSerializer
 from apps.user.models import UserModel
 

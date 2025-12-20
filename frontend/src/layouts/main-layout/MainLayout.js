@@ -24,38 +24,3 @@ const MainLayout = () => {
 };
 
 export { MainLayout };
-
-
-
-// import { Outlet } from "react-router-dom";
-//
-// const main-layout = () => {
-//     return (
-//         <div>
-//             <div>main-layout</div>
-//             <Outlet/>
-//         </div>
-//     );
-// };
-//
-// export {main-layout};
-
-// import React from "react";
-// import {Outlet} from "react-router-dom";
-// import {menu} from "../../components/menu/MenuComponent";
-//
-// const main-layout = () => {
-//     return (
-//         <div style={{minHeight: "100vh", display: "flex", flexDirection: "column"}}>
-//             <menu/>
-//             <main style={{flex: 1, maxWidth: 1200, margin: "0 auto", padding: "16px"}}>
-//                 <Outlet/>
-//             </main>
-//             <footer style={{borderTop: "1px solid #eee", padding: "12px 16px", textAlign: "center"}}>
-//                 AutoRia Clone • стартова версія
-//             </footer>
-//         </div>
-//     );
-// }
-//
-// export {main-layout}

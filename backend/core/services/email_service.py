@@ -28,17 +28,6 @@ class EmailService:
         msg.attach_alternative(html_content, "text/html")
         msg.send()
 
-    # def __send_email(to: str, template_name: str, context: dict, subject: str) -> None:
-    #     template = get_template(template_name)
-    #     html_content = template.render(context)
-    #     msg = EmailMultiAlternatives(
-    #         to=[to],
-    #         from_email=os.environ.get('EMAIL_HOST_USER'),
-    #         subject=subject,
-    #     )
-    #     msg.attach_alternative(html_content, "text/html")
-    #     msg.send()
-
     @classmethod
     def register(cls, user):
         token = JWTService.create_token(user, ActivateToken)
@@ -60,15 +49,15 @@ class EmailService:
             context={'url': url},
             subject="Recovery"
         )
-        
+
     @classmethod
     def manager_email_for_car_poster_edit(cls, car):
-       cls.__send_email(
-           to='bimber@i.ua', #тут мають бути пошти менеджерів
-           template_name='for_car_poster_edit.html',
-           context={'id': car.id },
-           subject='Оголошення потребує ручної модерації'
-       )
+        cls.__send_email(
+            to='bimber@i.ua',  # тут мають бути пошти менеджерів
+            template_name='for_car_poster_edit.html',
+            context={'id': car.id},
+            subject='Оголошення потребує ручної модерації'
+        )
 
     @classmethod
     def support_request(cls, instance):
@@ -88,30 +77,3 @@ class EmailService:
             },
             subject="Нова заявка підтримки",
         )
-
-
-    # def support_request(cls, instance):
-    #     # Формуємо дані про користувача
-    #     if instance.user:
-    #         if hasattr(instance.user, "profile"):
-    #             user_display = (
-    #                 f"{instance.user.profile.name} {instance.user.profile.surname} "
-    #                 f"<{instance.user.email}>"
-    #             )
-    #         else:
-    #             user_display = instance.user.email
-    #     else:
-    #         user_display = "Anonymous"
-    #
-    #     cls.__send_email(
-    #         to=["admin@gmail.com", "bimber@i.ua"],  # список email менеджерів/адмінів
-    #         template_name="support_request.html",
-    #         context={
-    #             "type": instance.type,
-    #             "text": instance.text,
-    #             "brand": instance.car_brand.brand if instance.car_brand else None,
-    #             "user": user_display,
-    #             "created_at": instance.created_at,
-    #         },
-    #         subject="Нова заявка підтримки",
-    #     )

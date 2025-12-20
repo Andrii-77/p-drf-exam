@@ -18,7 +18,6 @@ from .routing import websocket_urlpatterns
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'configs.settings')
 
-# application = get_asgi_application()
 application = ProtocolTypeRouter({
     'http': get_asgi_application(),
     'websocket': BaseMiddleware(URLRouter(websocket_urlpatterns))
