@@ -69,9 +69,29 @@ http://localhost
 
 ## База даних
 
-База даних створюється автоматично під час першого запуску контейнерів
+При відсутності база даних створюється автоматично під час першого запуску контейнерів
 шляхом виконання Django migrations.
 Дані бази даних у репозиторії не зберігаються.
+
+## Моя база даних
+
+Мою тестову базу даних можна завантажити за посиланням:
+
+https://drive.google.com/drive/folders/1SMQ6UNJMNBUc7b8PmhD_y03fmc3WMOKU?usp=drive_link
+
+Цю директорію потрібно вставити в корінь проєкту.
+
+Інформація про тестових користувачів з різними ролями і типами акаунтів (e-mail, пароль):
+
+1). admin@gmail.com  admin
+2). bimber@i.ua  admin  (використав свою адресу як тестову в ролі менеджера)
+3). user1@gmail.com  user
+4). user2@gmail.com  user
+5). user3@gmail.com  user
+6). user4@gmail.com  user
+7). user5@gmail.com  user
+8). user6@gmail.com  user
+
 
 ## Postman колекція
 
