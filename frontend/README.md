@@ -1,70 +1,107 @@
-# Getting Started with Create React App
+## Контейнеризація та готовність до AWS
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Проєкт повністю контейнеризований з використанням Docker та Docker Compose.
+Усі основні сервіси ізольовані в окремі контейнери, зокрема:
 
-## Available Scripts
+- Django REST API
+- MySQL
+- Redis
+- Celery
+- Celery Beat
+- Nginx
 
-In the project directory, you can run:
+Конфігурація застосунку винесена в змінні середовища (`.env`), що відповідає
+кращим практикам та дозволяє легко адаптувати проєкт для різних середовищ
+(локальне, staging, production).
 
-### `npm start`
+Архітектура проєкту підготовлена до деплою на AWS (наприклад, Amazon ECS або AWS App Runner).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Локальний запуск проєкту
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Backend (Django REST API)
 
-### `npm test`
+Backend повністю контейнеризований та запускається за допомогою Docker Compose.
+Backend і frontend працюють у контейнерах та взаємодіють між собою через Nginx.
+Для запуску виконайте команду в корені проєкту:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+docker compose up --build
+```
 
-### `npm run build`
+Під час запуску:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- збираються Docker-образи
+- запускається Django REST API
+- запускається frontend
+- піднімаються MySQL, Redis, Celery, Celery Beat та Nginx
+- автоматично виконуються Django migrations
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Після успішного запуску API буде доступне за адресою:
+http://localhost
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Frontend (React)
 
-### `npm run eject`
+Frontend запускається окремо.
+В іншому терміналі перейдіть у папку `frontend` та виконайте команди:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+cd frontend
+npm run watch
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Після завершення збірки frontend буде доступний за адресою:
+http://localhost
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+В браузері висвітиться вітальна сторінка проекту.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Користувачі та ролі
 
-## Learn More
+Для перевірки роботи з різними ролями користувачів можна:
+- створювати користувачів через Django Admin
+- або використовувати відповідні API-ендпоінти
+Для логінації використовується e-mail та пароль.
+Після реєстрації користувач є неактивним до моменту підтвердження email.
+Після підтвердження акаунт активується автоматично.
+Адміністратор або менеджер може змінювати статус користувачів вручну
+через Django Admin.
+Проєкт створений з мінімальним набором даних,
+достатнім для перевірки виконання поставлених завдань.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## База даних
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+База даних створюється автоматично під час першого запуску контейнерів
+шляхом виконання Django migrations.
+Дані бази даних у репозиторії не зберігаються.
 
-### Code Splitting
+## Postman колекція
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+У репозиторії додано Postman-колекцію з прикладами запитів до API.
 
-### Analyzing the Bundle Size
+Шлях до файлу:
+postman/python_exam.postman_collection.json
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Як використати
 
-### Making a Progressive Web App
+1. Відкрити Postman
+2. Натиснути Import
+3. Обрати файл `python_exam.postman_collection.json`
+4. Оновити base URL (за потреби)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Postman Environment
 
-### Advanced Configuration
+Для роботи з Postman необхідно створити Environment вручну
+та додати наступні змінні:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- host = localhost/api
+- access = <JWT access token>
+- refresh = <JWT refresh token>
 
-### Deployment
+Після цього оберіть створений environment у правому верхньому куті Postman.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Зупинка проєкту
 
-### `npm run build` fails to minify
+Для зупинки контейнерів виконайте:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```bash
+docker compose down
+```
